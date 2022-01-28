@@ -5,14 +5,14 @@ class Message:
     def get_from(self):
         return [
             entry["value"]
-            for entry in self._message_dict['payload']['headers']
+            for entry in self._message_dict["payload"]["headers"]
             if entry["name"] == "From"
         ][0]
 
     def get_to(self):
         return [
             entry["value"]
-            for entry in self._message_dict['payload']['headers']
+            for entry in self._message_dict["payload"]["headers"]
             if entry["name"] == "To"
         ][0]
 
@@ -22,6 +22,6 @@ class Message:
     def get_subject(self):
         return [
             entry["value"]
-            for entry in self._message_dict['payload']['headers']
-            if entry["name"] == 'Subject'
+            for entry in self._message_dict["payload"]["headers"]
+            if entry["name"] == "Subject"
         ][0]
