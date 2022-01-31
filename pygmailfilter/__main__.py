@@ -1,4 +1,4 @@
-from pygmailfilter.filter import Gmail
+from pygmailfilter.gmail import Gmail
 
 
 def load_json_tasks():
