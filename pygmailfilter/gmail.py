@@ -45,7 +45,7 @@ class Gmail:
             if label_add is not None:
                 self._modify_message_labels(
                     message_id=message_id,
-                    label_id_remove_lst=[label],
+                    label_id_remove_lst=[self._label_dict[label]],
                     label_id_add_lst=[label_add],
                 )
 
