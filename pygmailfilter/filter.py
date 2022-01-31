@@ -82,9 +82,7 @@ class Gmail:
 
     def save_attachements(self, drive_service, email_message, folder_id):
         message_detail = self._get_message_detail(
-            message_id=email_message["id"],
-            format="full",
-            metadata_headers=["parts"]
+            message_id=email_message["id"], format="full", metadata_headers=["parts"]
         )
         message_detail_payload = message_detail.get("payload")
 
@@ -97,17 +95,21 @@ class Gmail:
                 if "attachmentId" in body:
                     attachment_id = body["attachmentId"]
 
-                    response = self._service.users().messages().attachments().get(
-                        userId="me",
-                        messageId=email_message["id"],
-                        id=attachment_id
-                    ).execute()
+                    response = (
+                        self._service.users()
+                        .messages()
+                        .attachments()
+                        .get(
+                            userId="me", messageId=email_message["id"], id=attachment_id
+                        )
+                        .execute()
+                    )
 
                     drive_service.save_gmail_attachment(
                         response=response,
                         mime_type=mime_type,
                         file_name=file_name,
-                        folder_id=folder_id
+                        folder_id=folder_id,
                     )
 
     def _get_message_detail(self, message_id, format="metadata", metadata_headers=[]):
