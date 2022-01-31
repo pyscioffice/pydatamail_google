@@ -85,9 +85,7 @@ class Gmail:
     def save_attachments_of_label(self, label, path):
         drive = Drive(client_service_file=self._client_service_file)
         folder_id = drive.get_path_id(path=path)
-        files_lst = [
-            d["name"] for d in drive.list_folder_content(folder_id)
-        ]
+        files_lst = [d["name"] for d in drive.list_folder_content(folder_id)]
         query_string = "has:attachment"
         email_messages = self.search_email(query_string=query_string, label_lst=[label])
         for email_message in tqdm(email_messages):
@@ -95,10 +93,12 @@ class Gmail:
                 drive_service=drive,
                 email_message=email_message,
                 folder_id=folder_id,
-                exclude_files_lst=files_lst
+                exclude_files_lst=files_lst,
             )
 
-    def _save_attachments_of_message(self, drive_service, email_message, folder_id, exclude_files_lst=[]):
+    def _save_attachments_of_message(
+        self, drive_service, email_message, folder_id, exclude_files_lst=[]
+    ):
         message_detail = self._get_message_detail(
             message_id=email_message["id"], format="full", metadata_headers=["parts"]
         )

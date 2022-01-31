@@ -29,8 +29,7 @@ class Drive:
         parent_folder_id = None
         for p in path.split("/"):
             parent_folder_id = self.get_folder_id(
-                folder_name=p,
-                parent_folder=parent_folder_id
+                folder_name=p, parent_folder=parent_folder_id
             )
         return parent_folder_id
 
@@ -49,14 +48,12 @@ class Drive:
             folder = "root"
         query = "'" + folder + "' in parents"
         files_items_lst, next_page_token = self._get_files_page(
-            query=query,
-            next_page_token=None
+            query=query, next_page_token=None
         )
 
         while next_page_token:
             files_items, next_page_token = self._get_files_page(
-                query=query,
-                next_page_token=next_page_token
+                query=query, next_page_token=next_page_token
             )
             files_items_lst.extend(files_items)
 
@@ -97,14 +94,16 @@ class Drive:
 
     def _get_files_page(self, query, next_page_token=None):
         response = (
-            self._service.files().list(
+            self._service.files()
+            .list(
                 q=query,
                 pageSize=100,
                 spaces="drive",
                 corpora="user",
                 fields=f"nextPageToken, files(id, name, parents, mimeType)",
                 pageToken=next_page_token,
-            ).execute()
+            )
+            .execute()
         )
         return [
             response.get("files"),
