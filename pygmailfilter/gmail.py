@@ -152,16 +152,25 @@ class Gmail:
             )
         )
         for filter_dict in filter_dict_lst:
+            message_from = message.get_from()
+            message_to = message.get_to()
+            message_subject = message.get_subject()
             if (
                 "from" in filter_dict.keys()
-                and filter_dict["from"] in message.get_from()
+                and message_from is not None
+                and filter_dict["from"] in message_from
             ):
                 return self._label_dict[filter_dict["label"]]
-            if "to" in filter_dict.keys() and filter_dict["to"] in message.get_to():
+            if (
+                "to" in filter_dict.keys()
+                and message_to is not None
+                and filter_dict["to"] in message_to
+            ):
                 return self._label_dict[filter_dict["label"]]
             if (
                 "subject" in filter_dict.keys()
-                and filter_dict["subject"] in message.get_subject()
+                and message_subject is not None
+                and filter_dict["subject"] in message_subject
             ):
                 return self._label_dict[filter_dict["label"]]
         return None

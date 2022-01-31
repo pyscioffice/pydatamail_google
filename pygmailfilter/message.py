@@ -3,25 +3,37 @@ class Message:
         self._message_dict = message_dict
 
     def get_from(self):
-        return [
+        lst = [
             entry["value"]
             for entry in self._message_dict["payload"]["headers"]
             if entry["name"] == "From"
-        ][0]
+        ]
+        if len(lst) > 0:
+            return lst[0]
+        else:
+            return None
 
     def get_to(self):
-        return [
+        lst = [
             entry["value"]
             for entry in self._message_dict["payload"]["headers"]
             if entry["name"] == "To"
-        ][0]
+        ]
+        if len(lst) > 0:
+            return lst[0]
+        else:
+            return None
 
     def get_label_ids(self):
         return self._message_dict["labelIds"]
 
     def get_subject(self):
-        return [
+        lst = [
             entry["value"]
             for entry in self._message_dict["payload"]["headers"]
             if entry["name"] == "Subject"
-        ][0]
+        ]
+        if len(lst) > 0:
+            return lst[0]
+        else:
+            return None
