@@ -25,6 +25,15 @@ class Drive:
             working_dir=self._config_path,
         )
 
+    def get_path_id(self, path):
+        parent_folder_id = None
+        for p in path.split("/"):
+            parent_folder_id = self.get_folder_id(
+                folder_name=p,
+                parent_folder=parent_folder_id
+            )
+        return parent_folder_id
+
     def create_folder(self, folder_name, parent_folder=[]):
         file_metadata = {
             "name": folder_name,
@@ -35,26 +44,34 @@ class Drive:
         file = self._service.files().create(body=file_metadata, fields="id").execute()
         return file
 
-    def get_folder_id(self, folder_name, parent_folder=None):
-        if parent_folder is None:
-            parent_folder = "root"
-        response = (
-            self._service.files()
-            .list(
-                q="'" + parent_folder + "' in parents",
-                pageSize=100,
-                spaces="drive",
-                corpora="user",
-                fields=f"nextPageToken, files(id, name, parents, mimeType)",
-                pageToken=None,
-            )
-            .execute()
+    def list_folder_content(self, folder=None):
+        if folder is None:
+            folder = "root"
+        query = "'" + folder + "' in parents"
+        files_items_lst, next_page_token = self._get_files_page(
+            query=query,
+            next_page_token=None
         )
-        lst = [d["id"] for d in response["files"] if d["name"] == folder_name]
+
+        while next_page_token:
+            files_items, next_page_token = self._get_files_page(
+                query=query,
+                next_page_token=next_page_token
+            )
+            files_items_lst.extend(files_items)
+
+        if files_items_lst is None:
+            return []
+        else:
+            return files_items_lst
+
+    def get_folder_id(self, folder_name, parent_folder=None):
+        folder_lst = self.list_folder_content(folder=parent_folder)
+        lst = [d["id"] for d in folder_lst if d["name"] == folder_name]
         if len(lst) > 0:
             return lst[0]
         else:
-            if parent_folder == "root":
+            if parent_folder is None:
                 parent_folder_lst = []
             else:
                 parent_folder_lst = [parent_folder]
@@ -77,3 +94,19 @@ class Drive:
         self._service.files().create(
             body=file_metadata, media_body=media_body, fields="id"
         ).execute()
+
+    def _get_files_page(self, query, next_page_token=None):
+        response = (
+            self._service.files().list(
+                q=query,
+                pageSize=100,
+                spaces="drive",
+                corpora="user",
+                fields=f"nextPageToken, files(id, name, parents, mimeType)",
+                pageToken=next_page_token,
+            ).execute()
+        )
+        return [
+            response.get("files"),
+            response.get("nextPageToken"),
+        ]
