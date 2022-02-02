@@ -96,7 +96,11 @@ starting at the root of your google drive, for example `backup/emails`. In this 
 name of the label. 
 
 # Command Line interface 
-Work in progress 
+The command line interface is currently rather limited, it supports the following options: 
+
+- `pygmailfilter` run the tasks defined in `~/.pygmailfilter/config.json`.
+- `pygmailfilter --file ~/.pygmailfilter/config.json` run the tasks defined in a user specific task file. 
+- `pygmailfilter --labels` list all labels of your Gmail account.  
 
 # File based interface 
 Currently the file based interface only supports two functions: 

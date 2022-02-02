@@ -22,7 +22,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
         "console_scripts": [
-            'pygmailfilter=pygmailfilter.__main__:load_json_tasks'
+            'pygmailfilter=pygmailfilter.__main__:command_line_parser'
         ]
     }
 )
