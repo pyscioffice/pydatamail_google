@@ -8,6 +8,14 @@ from pygmailfilter.drive import Drive
 
 class Gmail:
     def __init__(self, client_service_file=None, userid="me"):
+        """
+        Gmail class to manage Emails via the Gmail API directly from Python
+
+        Args:
+            client_service_file (str/ None): path to the credentials.json file
+                                             typically "~/.pygmailfilter/credentials.json"
+            userid (str): in most cases this should be simply "me"
+        """
         connect_dict = {
             "api_name": "gmail",
             "api_version": "v1",
@@ -34,6 +42,19 @@ class Gmail:
         return list(self._label_dict.keys())
 
     def filter_label_by_sender(self, label, filter_dict_lst):
+        """
+        Filter emails in a given email label by applying a list of email filters, only the first filter that matches is
+        applied. A typical email filter list might look like this:
+             [{"from": "my_email@provider.com", "label": "my_special_label"},
+              {"to": "spam@google.com", "label": "another_email_label"},
+              {"subject": "you won", "label": "success_story"}]
+        At the current stage only one of the three fields "from", "to" or "subject" can be validated per filter and all
+        filters are applied as "is in" rather than an exact match.
+
+        Args:
+            label (str): Email label as string not email label id.
+            filter_dict_lst (list): List of filter rules with each filter rule represented by a dictionary
+        """
         message_list_response = self.search_email(query_string="", label_lst=[label])
 
         for message_id in tqdm(
@@ -50,10 +71,27 @@ class Gmail:
                 )
 
     def search_email(self, query_string="", label_lst=[]):
+        """
+        Search emails either by a specific query or optionally limit your search to a list of labels
+
+        Args:
+            query_string: query string to search for
+            label_lst (list): list of labels to be searched
+
+        Returns:
+            list: list with email IDs and thread IDs of the messages which match the search
+        """
         label_ids = [self._label_dict[label] for label in label_lst]
         return self._get_messages(query_string=query_string, label_ids=label_ids)
 
     def remove_labels_from_emails(self, label_lst):
+        """
+        Remove a list of labels from all emails in Gmail. A typical application is removing the Gmail smart labels:
+            label_lst=["CATEGORY_FORUMS", "CATEGORY_UPDATES", "CATEGORY_PROMOTIONS", "CATEGORY_SOCIAL"]
+
+        Args:
+            label_lst (list): list of labels
+        """
         label_convert_lst = [self._label_dict[label] for label in label_lst]
         for label in tqdm(label_convert_lst):
             message_list_response = self._get_messages(
@@ -67,6 +105,13 @@ class Gmail:
                 )
 
     def load_json_tasks(self, config_json=None):
+        """
+        Execute tasks defined in the JSON configuration. If no config_json file is provide the default location is:
+            "~/.pygmailfilter/config.json"
+
+        Args:
+            config_json (str/ None): path to the config_json file, default ~/.pygmailfilter/config.json
+        """
         if config_json is None:
             config_json = os.path.join(self._config_path, "config.json")
         with open(config_json) as f:
@@ -83,6 +128,15 @@ class Gmail:
                 raise ValueError("Task not recognized: ", task)
 
     def save_attachments_of_label(self, label, path):
+        """
+        Save all attachments of emails marked with a selected label to a specific folder on Google drive. This requires
+        Google drive authorisation to be included in the authentication credentials.
+
+        Args:
+            label (str): label name to search for emails with attachments
+            path (str): path inside google drive, for example "backup/emails". In this path a new subfolder for the
+                        label is created.
+        """
         drive = Drive(client_service_file=self._client_service_file)
         folder_id = drive.get_path_id(path=path)
         files_lst = [d["name"] for d in drive.list_folder_content(folder_id)]
