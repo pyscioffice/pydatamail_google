@@ -17,6 +17,7 @@ setup(
     install_requires=[
         'google-api-python-client==2.36.0',
         'google-auth==2.6.0',
+        'google-auth-oauthlib==0.4.6',
         'tqdm==4.62.3'
     ],
     cmdclass=versioneer.get_cmdclass(),
