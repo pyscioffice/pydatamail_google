@@ -1,7 +1,7 @@
 import io
 import os
 import base64
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload
 from pygmailfilter.service import create_service, create_config_folder
 
 
@@ -91,6 +91,15 @@ class Drive:
         self._service.files().create(
             body=file_metadata, media_body=media_body, fields="id"
         ).execute()
+
+    def save_file(self, path_to_file, file_metadata, file_mimetype="*/*"):
+        media = MediaFileUpload(path_to_file, mimetype=file_mimetype)
+        file = self._service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
+        return file.get('id')
 
     def _get_files_page(self, query, next_page_token=None):
         response = (
