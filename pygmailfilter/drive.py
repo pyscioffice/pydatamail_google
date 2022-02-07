@@ -94,12 +94,12 @@ class Drive:
 
     def save_file(self, path_to_file, file_metadata, file_mimetype="*/*"):
         media = MediaFileUpload(path_to_file, mimetype=file_mimetype)
-        file = self._service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
-        return file.get('id')
+        file = (
+            self._service.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
+        return file.get("id")
 
     def _get_files_page(self, query, next_page_token=None):
         response = (
