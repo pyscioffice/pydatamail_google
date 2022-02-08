@@ -7,7 +7,6 @@ def command_line_parser():
     Main function primarly used for the command line interface
     """
     parser = argparse.ArgumentParser(prog="pygmailfilter")
-    gmail = Gmail()
     parser.add_argument(
         "-f",
         "--file",
@@ -25,7 +24,16 @@ def command_line_parser():
         "--search",
         help="Search emails on Gmail.",
     )
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="Configuration Folder e.g. ~/.pygmailfilter",
+    )
     args = parser.parse_args()
+    if args.config:
+        gmail = Gmail(config_folder=args.config)
+    else:
+        gmail = Gmail(config_folder=args.config)
     if args.file:
         gmail.load_json_tasks(config_json=args.file)
     elif args.labels:
