@@ -7,7 +7,7 @@ from pygmailfilter.drive import Drive
 
 
 class Gmail:
-    def __init__(self, client_service_file=None, userid="me"):
+    def __init__(self, client_service_file=None, userid="me", config_folder="~/.pygmailfilter"):
         """
         Gmail class to manage Emails via the Gmail API directly from Python
 
@@ -15,13 +15,14 @@ class Gmail:
             client_service_file (str/ None): path to the credentials.json file
                                              typically "~/.pygmailfilter/credentials.json"
             userid (str): in most cases this should be simply "me"
+            config_folder (str): the folder for the configuration, typically "~/.pygmailfilter"
         """
         connect_dict = {
             "api_name": "gmail",
             "api_version": "v1",
             "scopes": ["https://mail.google.com/"],
         }
-        self._config_path = create_config_folder(config_folder="~/.pygmailfilter")
+        self._config_path = create_config_folder(config_folder=config_folder)
         if client_service_file is None:
             client_service_file = os.path.join(self._config_path, "credentials.json")
 

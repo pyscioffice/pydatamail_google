@@ -6,13 +6,21 @@ from pygmailfilter.service import create_service, create_config_folder
 
 
 class Drive:
-    def __init__(self, client_service_file=None):
+    def __init__(self, client_service_file=None, config_folder="~/.pygmailfilter"):
+        """
+        Google Drive class to manage files via the Google drive API directly from Python
+
+        Args:
+            client_service_file (str/ None): path to the credentials.json file
+                                             typically "~/.pygmailfilter/credentials.json"
+            config_folder (str): the folder for the configuration, typically "~/.pygmailfilter"
+        """
         connect_dict = {
             "api_name": "drive",
             "api_version": "v3",
             "scopes": ["https://www.googleapis.com/auth/drive"],
         }
-        self._config_path = create_config_folder(config_folder="~/.pygmailfilter")
+        self._config_path = create_config_folder(config_folder=config_folder)
         if client_service_file is None:
             client_service_file = os.path.join(self._config_path, "credentials.json")
 
