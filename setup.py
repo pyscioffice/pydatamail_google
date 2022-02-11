@@ -19,7 +19,8 @@ setup(
         'google-auth==2.6.0',
         'google-auth-oauthlib==0.4.6',
         'tqdm==4.62.3',
-        'pandas==1.4.0'
+        'pandas==1.4.0',
+        'sqlalchemy==1.4.31'
     ],
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
