@@ -63,7 +63,9 @@ class DatabaseInterface:
         self._session.commit()
 
     def commit_email_to_table(self, df):
-        email_id_lst, recipe_id_lst = self._build_email_index(df=df, colum_to_index="to")
+        email_id_lst, recipe_id_lst = self._build_email_index(
+            df=df, colum_to_index="to"
+        )
         self._session.add_all(
             [
                 EmailTo(email_id=email_id, email_to=email_to)
