@@ -1,6 +1,7 @@
 import base64
 from io import StringIO
 from html.parser import HTMLParser
+from pygmailfilter.message import get_header_field_from_message
 
 
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
@@ -25,7 +26,7 @@ def strip_tags(html):
     return s.get_data()
 
 
-def get_email_content(message):
+def _get_email_content(message):
     if "parts" not in message["payload"].keys():
         return None
     content_types = [p["mimeType"] for p in message["payload"]["parts"]]
@@ -43,3 +44,15 @@ def _get_email_body(message, ind):
     return base64.urlsafe_b64decode(
         message["payload"]["parts"][ind]["body"]["data"].encode("UTF-8")
     ).decode("UTF-8")
+
+
+def get_email_dict(message):
+    return {
+        "id": message["id"],
+        "thread_id": message["threadId"],
+        "label_ids": message["labelIds"],
+        "to": get_header_field_from_message(message=message, field="To"),
+        "from": get_header_field_from_message(message=message, field="From"),
+        "subject": get_header_field_from_message(message=message, field="Subject"),
+        "content": _get_email_content(message=message),
+    }

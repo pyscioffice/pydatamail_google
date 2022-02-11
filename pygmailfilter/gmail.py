@@ -3,8 +3,8 @@ import json
 import pandas
 from tqdm import tqdm
 from pygmailfilter.service import create_service, create_config_folder
-from pygmailfilter.message import Message, get_header_field_from_message
-from pygmailfilter.message_download import get_email_content
+from pygmailfilter.message import Message
+from pygmailfilter.message_download import get_email_dict
 from pygmailfilter.drive import Drive
 
 
@@ -165,39 +165,16 @@ class Gmail:
             )
 
     def download_messages_to_dataframe(self, message_id_lst):
-        (
-            to_lst,
-            from_lst,
-            subject_lst,
-            content_lst,
-            mid_lst,
-            thread_id_lst,
-            label_id_lst,
-        ) = ([], [], [], [], [], [], [])
-        for message_id in tqdm(message_id_lst):
-            message = self._get_message_detail(message_id=message_id, format="full")
-            to_lst.append(get_header_field_from_message(message=message, field="To"))
-            subject_lst.append(
-                get_header_field_from_message(message=message, field="Subject")
-            )
-            from_lst.append(
-                get_header_field_from_message(message=message, field="From")
-            )
-            content_lst.append(get_email_content(message=message))
-            mid_lst.append(message["id"])
-            thread_id_lst.append(message["threadId"])
-            label_id_lst.append(message["labelIds"])
-
         return pandas.DataFrame(
-            {
-                "id": mid_lst,
-                "thread_id": thread_id_lst,
-                "label_ids": label_id_lst,
-                "to": to_lst,
-                "from": from_lst,
-                "subject": subject_lst,
-                "content": content_lst,
-            }
+            [
+                self.get_email_dict(message_id=message_id)
+                for message_id in tqdm(message_id_lst)
+            ]
+        )
+
+    def get_email_dict(self, message_id):
+        return get_email_dict(
+            message=self._get_message_detail(message_id=message_id, format="full")
         )
 
     def _save_attachments_of_message(
