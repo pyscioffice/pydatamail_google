@@ -27,22 +27,37 @@ def strip_tags(html):
 
 
 def _get_email_content(message):
-    if "parts" not in message["payload"].keys():
-        return None
-    content_types = [p["mimeType"] for p in message["payload"]["parts"]]
+    if "parts" in message["payload"].keys():
+        return _get_parts_content(message_parts=message["payload"]["parts"])
+    else:
+        return _get_parts_content(message_parts=[message["payload"]])
+
+
+def _get_parts_content(message_parts):
+    content_types = [p["mimeType"] for p in message_parts]
     if "text/plain" in content_types:
-        return _get_email_body(message=message, ind=content_types.index("text/plain"))
+        return _get_email_body(
+            message_parts=message_parts[content_types.index("text/plain")]
+        )
     elif "text/html" in content_types:
         return strip_tags(
-            html=_get_email_body(message=message, ind=content_types.index("text/html"))
+            html=_get_email_body(
+                message_parts=message_parts[content_types.index("text/html")]
+            )
+        )
+    elif "multipart/alternative" in content_types:
+        return _get_parts_content(
+            message_parts=message_parts[content_types.index("multipart/alternative")][
+                "parts"
+            ]
         )
     else:
         return None
 
 
-def _get_email_body(message, ind):
+def _get_email_body(message_parts):
     return base64.urlsafe_b64decode(
-        message["payload"]["parts"][ind]["body"]["data"].encode("UTF-8")
+        message_parts["body"]["data"].encode("UTF-8")
     ).decode("UTF-8")
 
 
