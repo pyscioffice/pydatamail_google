@@ -18,7 +18,8 @@ setup(
         'google-api-python-client==2.37.0',
         'google-auth==2.6.0',
         'google-auth-oauthlib==0.4.6',
-        'tqdm==4.62.3'
+        'tqdm==4.62.3',
+        'pandas==1.4.0'
     ],
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
