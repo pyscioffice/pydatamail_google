@@ -165,6 +165,15 @@ class Gmail:
             )
 
     def download_messages_to_dataframe(self, message_id_lst):
+        """
+        Download a list of messages based on their email IDs and store the content in a pandas.DataFrame.
+
+        Args:
+            message_id_lst (list): list of emails IDs
+
+        Returns:
+            pandas.DataFrame: pandas.DataFrame which contains the rendered emails
+        """
         return pandas.DataFrame(
             [
                 self.get_email_dict(message_id=message_id)
@@ -173,6 +182,15 @@ class Gmail:
         )
 
     def get_email_dict(self, message_id):
+        """
+        Get the content of a given message as dictionary
+
+        Args:
+            message_id (str):
+
+        Returns:
+            dict: Dictionary with the message content
+        """
         return get_email_dict(
             message=self._get_message_detail(message_id=message_id, format="full")
         )

@@ -103,6 +103,13 @@ gmail.download_messages_to_dataframe(message_id_lst)
 ```
 The `message_id_lst` is a list of message ids, this can be obtained from `gmail.search_email()`. 
 
+## Get email content as dictionary 
+The content of the email rendered as python dictionary for further postprocessing: 
+```
+gmail.get_email_dict(message_id)
+```
+The `message_id` can be derived from a function like `gmail.search_email()`. 
+
 # Command Line interface 
 The command line interface is currently rather limited, it supports the following options: 
 
