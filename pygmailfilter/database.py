@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
@@ -39,6 +39,7 @@ class EmailContent(Base):
     email_id = Column(String)
     email_subject = Column(String)
     email_content = Column(String)
+    email_deleted = Column(Boolean)
 
 
 class DatabaseInterface:
@@ -94,6 +95,7 @@ class DatabaseInterface:
                     email_id=email_id,
                     email_subject=email_subject,
                     email_content=email_content,
+                    email_deleted=False,
                 )
                 for email_id, email_subject, email_content in zip(
                     df_content["id"], df_content["subject"], df_content["content"]
