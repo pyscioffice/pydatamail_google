@@ -75,19 +75,26 @@ class Gmail:
                     label_id_add_lst=[label_add],
                 )
 
-    def search_email(self, query_string="", label_lst=[]):
+    def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
         Search emails either by a specific query or optionally limit your search to a list of labels
 
         Args:
-            query_string: query string to search for
+            query_string (str): query string to search for
             label_lst (list): list of labels to be searched
+            only_message_ids (bool): return only the email IDs not the thread IDs - default: false
 
         Returns:
             list: list with email IDs and thread IDs of the messages which match the search
         """
         label_ids = [self._label_dict[label] for label in label_lst]
-        return self._get_messages(query_string=query_string, label_ids=label_ids)
+        message_id_lst = self._get_messages(
+            query_string=query_string, label_ids=label_ids
+        )
+        if not only_message_ids:
+            return message_id_lst
+        else:
+            return [d["id"] for d in message_id_lst]
 
     def remove_labels_from_emails(self, label_lst):
         """
@@ -146,11 +153,13 @@ class Gmail:
         folder_id = drive.get_path_id(path=path)
         files_lst = [d["name"] for d in drive.list_folder_content(folder_id)]
         query_string = "has:attachment"
-        email_messages = self.search_email(query_string=query_string, label_lst=[label])
-        for email_message in tqdm(email_messages):
+        email_messages = self.search_email(
+            query_string=query_string, label_lst=[label], only_message_ids=True
+        )
+        for email_message_id in tqdm(email_messages):
             self._save_attachments_of_message(
                 drive_service=drive,
-                email_message=email_message,
+                email_message_id=email_message_id,
                 folder_id=folder_id,
                 exclude_files_lst=files_lst,
             )
@@ -192,10 +201,10 @@ class Gmail:
         )
 
     def _save_attachments_of_message(
-        self, drive_service, email_message, folder_id, exclude_files_lst=[]
+        self, drive_service, email_message_id, folder_id, exclude_files_lst=[]
     ):
         message_detail = self._get_message_detail(
-            message_id=email_message["id"], format="full", metadata_headers=["parts"]
+            message_id=email_message_id, format="full", metadata_headers=["parts"]
         )
         message_detail_payload = message_detail.get("payload")
 
@@ -214,9 +223,7 @@ class Gmail:
                         self._service.users()
                         .messages()
                         .attachments()
-                        .get(
-                            userId="me", messageId=email_message["id"], id=attachment_id
-                        )
+                        .get(userId="me", messageId=email_message_id, id=attachment_id)
                         .execute()
                     )
 

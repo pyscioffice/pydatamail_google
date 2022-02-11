@@ -63,10 +63,11 @@ filters are applied as "is in" rather than an exact match.
 ## Search for Emails 
 Search emails either by a specific query or optionally limit your search to a list of labels. 
 ```
-gmail.search_email(query_string="", label_lst=[])
+gmail.search_email(query_string="", label_lst=[], only_message_ids=False)
 ```
 The `query_string` supports all the functionality the gmail search has to offer, for example you can search for emails 
-with attachments using the query `"has:attachment"`. 
+with attachments using the query `"has:attachment"`. In addition with the option `only_message_ids` the return values
+can be reduced to just a list of email ids, otherwise both the email ids and the thread ids are returned. 
 
 ## Remove Labels 
 As Gmail provides a set of smart labels which are accessible on the web interface but typically hidden in the mobile 
@@ -94,6 +95,13 @@ gmail.save_attachments_of_label(label, path)
 The label is given by its label name rather than the google internal label ID and the path has to be a relative path
 starting at the root of your google drive, for example `backup/emails`. In this path a new subfolder is created with the
 name of the label. 
+
+## Download messages to pandas Dataframe
+For offline processing it is helpful to download messages in bulk to pandas dataframes:  
+```
+gmail.download_messages_to_dataframe(message_id_lst)
+```
+The `message_id_lst` is a list of message ids, this can be obtained from `gmail.search_email()`. 
 
 # Command Line interface 
 The command line interface is currently rather limited, it supports the following options: 

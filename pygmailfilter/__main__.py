@@ -39,7 +39,7 @@ def command_line_parser():
     elif args.labels:
         print(gmail.labels)
     elif args.search:
-        print(gmail.search_email(query_string=args.search))
+        print(gmail.search_email(query_string=args.search, only_message_ids=True))
     else:
         gmail.load_json_tasks()
 
