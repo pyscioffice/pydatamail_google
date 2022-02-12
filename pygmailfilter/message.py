@@ -29,9 +29,13 @@ class Message:
         self._message_dict = message_dict
 
     def get_from(self):
-        return self._split_emails(
+        email_lst = self._split_emails(
             email_lst=self.get_header_field_from_message(field="From")
-        )[0]
+        )
+        if len(email_lst) == 1:
+            return email_lst[0]
+        else:
+            return None
 
     def get_to(self):
         return self._split_emails(
@@ -48,8 +52,8 @@ class Message:
         return self.get_header_field_from_message(field="Subject")
 
     def get_date(self):
-        return datetime.strptime(
-            self.get_header_field_from_message(field="Date"), "%a, %d %b %Y %H:%M:%S %z"
+        return email_date_converter(
+            email_date=self.get_header_field_from_message(field="Date")
         )
 
     def get_content(self):
@@ -112,6 +116,13 @@ class Message:
         else:
             return None
 
+    def _split_emails(self, email_lst):
+        if email_lst is not None:
+            email_split_lst = email_lst.split(", ")
+            return [self._get_email_address(email=email) for email in email_split_lst]
+        else:
+            return []
+
     @staticmethod
     def _get_email_body(message_parts):
         return base64.urlsafe_b64decode(
@@ -124,13 +135,6 @@ class Message:
         s.feed(html)
         return s.get_data()
 
-    def _split_emails(self, email_lst):
-        if email_lst is not None:
-            email_split_lst = email_lst.split(", ")
-            return [self._get_email_address(email=email) for email in email_split_lst]
-        else:
-            return []
-
     @staticmethod
     def _get_email_address(email):
         email_split = email.split("<")
@@ -138,3 +142,14 @@ class Message:
             return email.lower()
         else:
             return email_split[1].split(">")[0].lower()
+
+
+def email_date_converter(email_date):
+    if email_date[-3:-2].isalpha():
+        email_date = " ".join(email_date.split()[:-1])
+    if email_date[:3].isalpha() and email_date[-3] != ":":
+        return datetime.strptime(email_date, "%a, %d %b %Y %H:%M:%S %z")
+    elif email_date[-3] == ":":
+        return datetime.strptime(email_date, "%a, %d %b %Y %H:%M:%S")
+    else:
+        return datetime.strptime(email_date, "%d %b %Y %H:%M:%S %z")
