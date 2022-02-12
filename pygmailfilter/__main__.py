@@ -20,6 +20,12 @@ def command_line_parser():
         help="List available labels on Gmail.",
     )
     parser.add_argument(
+        "-d",
+        "--database",
+        action="store_true",
+        help="Update local database.",
+    )
+    parser.add_argument(
         "-s",
         "--search",
         help="Search emails on Gmail.",
@@ -40,6 +46,8 @@ def command_line_parser():
         print(gmail.labels)
     elif args.search:
         print(gmail.search_email(query_string=args.search, only_message_ids=True))
+    elif args.database:
+        gmail.update_database()
     else:
         gmail.load_json_tasks()
 

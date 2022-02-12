@@ -110,12 +110,19 @@ gmail.get_email_dict(message_id)
 ```
 The `message_id` can be derived from a function like `gmail.search_email()`. 
 
+## Update database
+Update local database stored in `~/.pygmailfilter/email.db`:
+```
+gmail.update_database()
+```
+
 # Command Line interface 
 The command line interface is currently rather limited, it supports the following options: 
 
 - `pygmailfilter` run the tasks defined in `~/.pygmailfilter/config.json`.
 - `pygmailfilter --file ~/.pygmailfilter/config.json` run the tasks defined in a user specific task file. 
-- `pygmailfilter --labels` list all labels of your Gmail account.  
+- `pygmailfilter --labels` list all labels of your Gmail account. 
+- `pygmailfilter --database` update local database. 
 
 # File based interface 
 Currently the file based interface only supports two functions: 
@@ -127,6 +134,7 @@ Both functions are explained in more detail above in the python interface sectio
 which would be located at `~/.pygmailfilter/config.json`: 
 ```
 {
+    "database": "sqlite:////~/.pygmailfilter/email.db",
     "remove_labels_from_emails": 
     ["CATEGORY_FORUMS", "CATEGORY_UPDATES", "CATEGORY_PROMOTIONS", "CATEGORY_SOCIAL"], 
     "filter_label_by_sender": {
