@@ -4,8 +4,7 @@ import pandas
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from pygmailfilter.service import create_service, create_config_folder
-from pygmailfilter.message import Message
-from pygmailfilter.message_download import get_email_dict
+from pygmailfilter.message import Message, get_email_dict
 from pygmailfilter.drive import Drive
 from pygmailfilter.database import DatabaseInterface
 
