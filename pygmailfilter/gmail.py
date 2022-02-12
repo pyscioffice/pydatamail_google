@@ -96,16 +96,12 @@ class Gmail:
                     label_id_add_lst=[label_add],
                 )
 
-    def update_database(self, label_lst=None):
+    def update_database(self):
         """
         Update local email database
         """
-        if label_lst is None:
-            label_lst = []
         if self._db is not None:
-            message_id_lst = self.search_email(
-                label_lst=label_lst, only_message_ids=True
-            )
+            message_id_lst = self.search_email(only_message_ids=True)
             (
                 new_messages_lst,
                 message_label_updates_lst,
@@ -130,9 +126,13 @@ class Gmail:
         Returns:
             list: List of email labels
         """
-        return self._get_message_detail(
+        message_dict = self._get_message_detail(
             message_id=message_id, format="metadata", metadata_headers=["labelIds"]
-        )["labelIds"]
+        )
+        if "labelIds" in message_dict.keys():
+            return message_dict["labelIds"]
+        else:
+            return []
 
     def get_labels_for_emails(self, message_id_lst):
         """

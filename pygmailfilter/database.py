@@ -115,12 +115,13 @@ class DatabaseInterface:
     def _build_email_index(self, df, colum_to_index):
         email_id_lst, column_id_lst = [], []
         for eid, email_lst in zip(df["id"], df[colum_to_index]):
-            email_split_lst = email_lst.split(", ")
-            for email_add in [
-                self._get_email_address(email=email) for email in email_split_lst
-            ]:
-                email_id_lst.append(eid)
-                column_id_lst.append(email_add)
+            if email_lst is not None:
+                email_split_lst = email_lst.split(", ")
+                for email_add in [
+                    self._get_email_address(email=email) for email in email_split_lst
+                ]:
+                    email_id_lst.append(eid)
+                    column_id_lst.append(email_add)
         return email_id_lst, column_id_lst
 
     def _commit_thread_table(self, df):

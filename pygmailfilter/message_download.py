@@ -62,10 +62,14 @@ def _get_email_body(message_parts):
 
 
 def get_email_dict(message):
+    if "labelIds" in message.keys():
+        label_ids_lst = message["labelIds"]
+    else:
+        label_ids_lst = []
     return {
         "id": message["id"],
         "thread_id": message["threadId"],
-        "label_ids": message["labelIds"],
+        "label_ids": label_ids_lst,
         "to": get_header_field_from_message(message=message, field="To"),
         "from": get_header_field_from_message(message=message, field="From"),
         "subject": get_header_field_from_message(message=message, field="Subject"),
