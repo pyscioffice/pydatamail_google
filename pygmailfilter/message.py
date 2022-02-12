@@ -29,10 +29,14 @@ class Message:
         self._message_dict = message_dict
 
     def get_from(self):
-        return self.get_header_field_from_message(field="From")
+        return self._split_emails(
+            email_lst=self.get_header_field_from_message(field="From")
+        )[0]
 
     def get_to(self):
-        return self.get_header_field_from_message(field="To")
+        return self._split_emails(
+            email_lst=self.get_header_field_from_message(field="To")
+        )
 
     def get_label_ids(self):
         if "labelIds" in self._message_dict.keys():
@@ -119,3 +123,18 @@ class Message:
         s = MLStripper()
         s.feed(html)
         return s.get_data()
+
+    def _split_emails(self, email_lst):
+        if email_lst is not None:
+            email_split_lst = email_lst.split(", ")
+            return [self._get_email_address(email=email) for email in email_split_lst]
+        else:
+            return []
+
+    @staticmethod
+    def _get_email_address(email):
+        email_split = email.split("<")
+        if len(email_split) == 1:
+            return email.lower()
+        else:
+            return email_split[1].split(">")[0].lower()

@@ -171,23 +171,20 @@ class DatabaseInterface:
         ]
         return self._create_dataframe(email_collect_lst=email_collect_lst)
 
-    def _build_email_index(self, df, colum_to_index):
-        email_id_lst, column_id_lst = [], []
-        for eid, email_lst in zip(df["id"], df[colum_to_index]):
-            if email_lst is not None:
-                email_split_lst = email_lst.split(", ")
-                for email_add in [
-                    self._get_email_address(email=email) for email in email_split_lst
-                ]:
-                    email_id_lst.append(eid)
-                    column_id_lst.append(email_add)
-        return email_id_lst, column_id_lst
-
     def _commit_thread_table(self, df):
         self._session.add_all(
             [
                 Threads(email_id=email_id, thread_id=thread_id)
                 for email_id, thread_id in zip(df["id"], df["thread_id"])
+            ]
+        )
+        self._session.commit()
+
+    def _commit_email_from_table(self, df):
+        self._session.add_all(
+            [
+                EmailFrom(email_id=email_id, email_from=email_from)
+                for email_id, email_from in zip(df["id"], df["from"])
             ]
         )
         self._session.commit()
@@ -201,27 +198,11 @@ class DatabaseInterface:
         self._session.commit()
 
     def _commit_email_to_table(self, df):
-        email_id_lst, recipe_id_lst = self._build_email_index(
-            df=df, colum_to_index="to"
-        )
-        self._session.add_all(
-            [
-                EmailTo(email_id=email_id, email_to=email_to)
-                for email_id, email_to in zip(email_id_lst, recipe_id_lst)
-            ]
-        )
-        self._session.commit()
-
-    def _commit_email_from_table(self, df):
-        email_id_lst, recipe_id_lst = self._build_email_index(
-            df=df, colum_to_index="from"
-        )
-        self._session.add_all(
-            [
-                EmailFrom(email_id=email_id, email_from=email_from)
-                for email_id, email_from in zip(email_id_lst, recipe_id_lst)
-            ]
-        )
+        email_to_lst = []
+        for email_id, email_lst in zip(df["id"], df["to"]):
+            for email_to in email_lst:
+                email_to_lst.append(EmailTo(email_id=email_id, email_to=email_to))
+        self._session.add_all(email_to_lst)
         self._session.commit()
 
     def _commit_content_table(self, df):
@@ -303,11 +284,3 @@ class DatabaseInterface:
         session = sessionmaker(bind=engine)()
         Base.metadata.create_all(engine)
         return session
-
-    @staticmethod
-    def _get_email_address(email):
-        email_split = email.split("<")
-        if len(email_split) == 1:
-            return email.lower()
-        else:
-            return email_split[1].split(">")[0].lower()
