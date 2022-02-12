@@ -1,3 +1,4 @@
+import pandas
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -46,3 +47,18 @@ def get_labels_pie_plot(gmail, df):
     )
     ax1.axis("equal")
     plt.show()
+
+
+def get_number_of_email_plot(df, steps=8):
+    start_month = [d.year * 12 + d.month for d in pandas.to_datetime(df.date)]
+
+    plt.hist(start_month)
+    plt.xticks(
+        np.linspace(np.min(start_month), np.max(start_month), steps),
+        [
+            str(int(month // 12)) + "-" + str(int(month % 12))
+            for month in np.linspace(np.min(start_month), np.max(start_month), steps)
+        ],
+    )
+    plt.xlabel("Date")
+    plt.ylabel("Number of Emails")
