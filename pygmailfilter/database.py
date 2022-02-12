@@ -117,7 +117,7 @@ class DatabaseInterface:
 
     def get_all_emails(self):
         email_collect_lst = [
-            [email.email_id, email.email_subject, email.email_content]
+            [email.email_id, email.email_subject, email.email_content, email.email_date]
             for email in self._session.query(EmailContent).all()
         ]
         return self._create_dataframe(email_collect_lst=email_collect_lst)
@@ -164,7 +164,7 @@ class DatabaseInterface:
 
     def _get_email_collection(self, email_id_lst):
         email_collect_lst = [
-            [email.email_id, email.email_subject, email.email_content]
+            [email.email_id, email.email_subject, email.email_content, email.email_date]
             for email in self._session.query(EmailContent)
             .filter(EmailContent.email_id.in_(email_id_lst))
             .all()
@@ -231,8 +231,9 @@ class DatabaseInterface:
             email_to_lst,
             email_threads_lst,
             email_labels_lst,
-        ) = ([], [], [], [], [], [], [])
-        for email_id, email_subject, email_content in tqdm(email_collect_lst):
+            email_date_lst
+        ) = ([], [], [], [], [], [], [], [])
+        for email_id, email_subject, email_content, email_date in tqdm(email_collect_lst):
             email_from = [
                 email_from.email_from
                 for email_from in self._session.query(EmailFrom)
@@ -267,11 +268,13 @@ class DatabaseInterface:
             email_id_lst.append(email_id)
             email_subject_lst.append(email_subject)
             email_content_lst.append(email_content)
+            email_date_lst.append(email_date)
         return pandas.DataFrame(
             {
                 "id": email_id_lst,
                 "from": email_from_lst,
                 "to": email_to_lst,
+                "date": email_date_lst,
                 "threads": email_threads_lst,
                 "labels": email_labels_lst,
                 "subject": email_subject_lst,
