@@ -1,3 +1,5 @@
+import pandas
+from tqdm import tqdm
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -112,6 +114,62 @@ class DatabaseInterface:
                         ).filter(Labels.label_id == label_id).delete()
                 self._session.commit()
 
+    def get_all_emails(self):
+        email_collect_lst = [
+            [email.email_id, email.email_subject, email.email_content]
+            for email in self._session.query(EmailContent).all()
+        ]
+        return self._create_dataframe(email_collect_lst=email_collect_lst)
+
+    def get_emails_by_label(self, label_id):
+        return self._get_email_collection(
+            email_id_lst=[
+                email_id
+                for email_id, in self._session.query(Labels.email_id)
+                .filter(Labels.label_id == label_id)
+                .all()
+            ]
+        )
+
+    def get_emails_by_from(self, email_from):
+        return self._get_email_collection(
+            email_id_lst=[
+                email_id
+                for email_id, in self._session.query(EmailFrom.email_id)
+                .filter(EmailFrom.email_from == email_from)
+                .all()
+            ]
+        )
+
+    def get_emails_by_to(self, email_to):
+        return self._get_email_collection(
+            email_id_lst=[
+                email_id
+                for email_id, in self._session.query(EmailTo.email_id)
+                .filter(EmailTo.email_to == email_to)
+                .all()
+            ]
+        )
+
+    def get_emails_by_thread(self, thread_id):
+        return self._get_email_collection(
+            email_id_lst=[
+                email_id
+                for email_id, in self._session.query(Threads.email_id)
+                .filter(Threads.thread_id == thread_id)
+                .all()
+            ]
+        )
+
+    def _get_email_collection(self, email_id_lst):
+        email_collect_lst = [
+            [email.email_id, email.email_subject, email.email_content]
+            for email in self._session.query(EmailContent)
+            .filter(EmailContent.email_id.in_(email_id_lst))
+            .all()
+        ]
+        return self._create_dataframe(email_collect_lst=email_collect_lst)
+
     def _build_email_index(self, df, colum_to_index):
         email_id_lst, column_id_lst = [], []
         for eid, email_lst in zip(df["id"], df[colum_to_index]):
@@ -166,7 +224,9 @@ class DatabaseInterface:
         self._session.commit()
 
     def _commit_content_table(self, df):
-        df_content = df.drop(labels=["thread_id", "label_ids", "to", "from"], axis=1, inplace=False)
+        df_content = df.drop(
+            labels=["thread_id", "label_ids", "to", "from"], axis=1, inplace=False
+        )
         self._session.add_all(
             [
                 EmailContent(
@@ -181,6 +241,63 @@ class DatabaseInterface:
             ]
         )
         self._session.commit()
+
+    def _create_dataframe(self, email_collect_lst):
+        (
+            email_id_lst,
+            email_subject_lst,
+            email_content_lst,
+            email_from_lst,
+            email_to_lst,
+            email_threads_lst,
+            email_labels_lst,
+        ) = ([], [], [], [], [], [], [])
+        for email_id, email_subject, email_content in tqdm(email_collect_lst):
+            email_from = [
+                email_from.email_from
+                for email_from in self._session.query(EmailFrom)
+                .filter(EmailFrom.email_id == email_id)
+                .all()
+            ]
+            email_to = [
+                email_to.email_to
+                for email_to in self._session.query(EmailTo)
+                .filter(EmailTo.email_id == email_id)
+                .all()
+            ]
+            label_lst = [
+                labels.label_id
+                for labels in self._session.query(Labels)
+                .filter(Labels.email_id == email_id)
+                .all()
+            ]
+            thread_lst = [
+                threads.thread_id
+                for threads in self._session.query(Threads)
+                .filter(Threads.email_id == email_id)
+                .all()
+            ]
+            if len(email_from) > 0:
+                email_from_lst.append(email_from[0])
+            else:
+                email_from_lst.append(None)
+            email_to_lst.append(email_to)
+            email_labels_lst.append(label_lst)
+            email_threads_lst.append(thread_lst[0])
+            email_id_lst.append(email_id)
+            email_subject_lst.append(email_subject)
+            email_content_lst.append(email_content)
+        return pandas.DataFrame(
+            {
+                "id": email_id_lst,
+                "from": email_from_lst,
+                "to": email_to_lst,
+                "threads": email_threads_lst,
+                "labels": email_labels_lst,
+                "subject": email_subject_lst,
+                "content": email_content_lst,
+            }
+        )
 
     @staticmethod
     def _create_database_session(engine):
