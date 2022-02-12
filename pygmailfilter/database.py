@@ -1,6 +1,6 @@
 import pandas
 from tqdm import tqdm
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
@@ -14,6 +14,7 @@ class EmailContent(Base):
     email_subject = Column(String)
     email_content = Column(String)
     email_deleted = Column(Boolean)
+    email_date = Column(DateTime)
 
 
 class Threads(Base):
@@ -224,9 +225,6 @@ class DatabaseInterface:
         self._session.commit()
 
     def _commit_content_table(self, df):
-        df_content = df.drop(
-            labels=["thread_id", "label_ids", "to", "from"], axis=1, inplace=False
-        )
         self._session.add_all(
             [
                 EmailContent(
@@ -234,9 +232,10 @@ class DatabaseInterface:
                     email_subject=email_subject,
                     email_content=email_content,
                     email_deleted=False,
+                    email_date=email_date,
                 )
-                for email_id, email_subject, email_content in zip(
-                    df_content["id"], df_content["subject"], df_content["content"]
+                for email_id, email_subject, email_content, email_date in zip(
+                    df["id"], df["subject"], df["content"], df["date"]
                 )
             ]
         )
