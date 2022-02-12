@@ -64,8 +64,11 @@ class DatabaseInterface:
         ]
 
     def mark_emails_as_deleted(self, message_id_lst):
-        for instance in self._session.query(EmailContent).filter(
-                EmailContent.email_id.in_(message_id_lst)).all():
+        for instance in (
+            self._session.query(EmailContent)
+            .filter(EmailContent.email_id.in_(message_id_lst))
+            .all()
+        ):
             instance.email_deleted = True
         self._session.commit()
 
@@ -78,21 +81,35 @@ class DatabaseInterface:
 
     def update_labels(self, message_id_lst, message_meta_lst):
         for message_id, message_labels in zip(message_id_lst, message_meta_lst):
-            message_label_stored = [m for m, in self._session.query(Labels.label_id).filter(Labels.email_id == message_id).all()]
+            message_label_stored = [
+                m
+                for m, in self._session.query(Labels.label_id)
+                .filter(Labels.email_id == message_id)
+                .all()
+            ]
             if message_label_stored == message_labels:
                 continue
             else:
                 message_label_stored_set = set(message_label_stored)
                 message_labels_set = set(message_labels)
-                labels_to_add = list(message_labels_set.difference(message_label_stored_set))
-                labels_to_remove = list(message_label_stored_set.difference(message_labels_set))
+                labels_to_add = list(
+                    message_labels_set.difference(message_label_stored_set)
+                )
+                labels_to_remove = list(
+                    message_label_stored_set.difference(message_labels_set)
+                )
                 if len(labels_to_add) > 0:
                     self._session.add_all(
-                        [Labels(email_id=message_id, label_id=label_id) for label_id in labels_to_add])
+                        [
+                            Labels(email_id=message_id, label_id=label_id)
+                            for label_id in labels_to_add
+                        ]
+                    )
                 if len(labels_to_remove) > 0:
                     for label_id in labels_to_remove:
-                        self._session.query(Labels).filter(Labels.email_id == message_id).filter(
-                            Labels.label_id == label_id).delete()
+                        self._session.query(Labels).filter(
+                            Labels.email_id == message_id
+                        ).filter(Labels.label_id == label_id).delete()
                 self._session.commit()
 
     def _build_email_index(self, df, colum_to_index):

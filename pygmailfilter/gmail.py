@@ -57,7 +57,9 @@ class Gmail:
 
         # Initialize database
         if "database" in self._config_dict.keys():
-            self._db = self._create_database(connection_str=self._config_dict["database"])
+            self._db = self._create_database(
+                connection_str=self._config_dict["database"]
+            )
         else:
             self._db = None
 
@@ -94,20 +96,27 @@ class Gmail:
                     label_id_add_lst=[label_add],
                 )
 
-    def update_database(self):
+    def update_database(self, label_lst=None):
         """
         Update local email database
         """
+        if label_lst is None:
+            label_lst = []
         if self._db is not None:
-            message_id_lst = self.search_email(only_message_ids=True)
-            new_messages_lst, message_label_updates_lst, deleted_messages_lst = \
-                self._db.get_labels_to_update(message_id_lst=message_id_lst)
+            message_id_lst = self.search_email(
+                label_lst=label_lst, only_message_ids=True
+            )
+            (
+                new_messages_lst,
+                message_label_updates_lst,
+                deleted_messages_lst,
+            ) = self._db.get_labels_to_update(message_id_lst=message_id_lst)
             self._db.mark_emails_as_deleted(message_id_lst=deleted_messages_lst)
             self._db.update_labels(
                 message_id_lst=message_label_updates_lst,
                 message_meta_lst=self.get_labels_for_emails(
                     message_id_lst=message_label_updates_lst
-                )
+                ),
             )
             self._store_emails_in_database(new_messages_lst)
 
@@ -122,9 +131,7 @@ class Gmail:
             list: List of email labels
         """
         return self._get_message_detail(
-            message_id=message_id,
-            format="metadata",
-            metadata_headers=["labelIds"]
+            message_id=message_id, format="metadata", metadata_headers=["labelIds"]
         )["labelIds"]
 
     def get_labels_for_emails(self, message_id_lst):
@@ -137,7 +144,10 @@ class Gmail:
         Returns:
             list: Nested list of email labels for each email
         """
-        return [self.get_labels_for_email(message_id=message_id) for message_id in message_id_lst]
+        return [
+            self.get_labels_for_email(message_id=message_id)
+            for message_id in message_id_lst
+        ]
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
