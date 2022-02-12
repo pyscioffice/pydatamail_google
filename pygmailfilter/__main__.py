@@ -39,7 +39,7 @@ def command_line_parser():
     if args.config:
         gmail = Gmail(config_folder=args.config)
     else:
-        gmail = Gmail(config_folder=args.config)
+        gmail = Gmail()
     if args.file:
         gmail.load_json_tasks(config_json=args.file)
     elif args.labels:
