@@ -2,10 +2,12 @@ import os
 import json
 import pandas
 from tqdm import tqdm
+from sqlalchemy import create_engine
 from pygmailfilter.service import create_service, create_config_folder
 from pygmailfilter.message import Message
 from pygmailfilter.message_download import get_email_dict
 from pygmailfilter.drive import Drive
+from pygmailfilter.database import DatabaseInterface
 
 
 class Gmail:
@@ -26,11 +28,22 @@ class Gmail:
             "api_version": "v1",
             "scopes": ["https://mail.google.com/"],
         }
+
+        # Create config directory
         self._config_path = create_config_folder(config_folder=config_folder)
         if client_service_file is None:
             client_service_file = os.path.join(self._config_path, "credentials.json")
-
         self._client_service_file = client_service_file
+
+        # Read config file
+        config_file = os.path.join(self._config_path, "config.json")
+        if os.path.exists(config_file):
+            with open(config_file) as f:
+                self._config_dict = json.load(f)
+        else:
+            self._config_dict = {}
+
+        # Initialise service
         self._userid = userid
         self._service = create_service(
             client_secret_file=self._client_service_file,
@@ -41,6 +54,12 @@ class Gmail:
             working_dir=self._config_path,
         )
         self._label_dict = self._get_label_translate_dict()
+
+        # Initialize database
+        if "database" in self._config_dict.keys():
+            self._db = self._create_database(connection_str=self._config_dict["database"])
+        else:
+            self._db = None
 
     @property
     def labels(self):
@@ -74,6 +93,35 @@ class Gmail:
                     label_id_remove_lst=[self._label_dict[label]],
                     label_id_add_lst=[label_add],
                 )
+
+    def download_emails_to_database(self, message_id_lst):
+        """
+        Download a list of messages based on their email IDs and store the content in a pandas.DataFrame.
+
+        Args:
+            message_id_lst (list): list of emails IDs
+        """
+        if self._db is not None:
+            new_messages_lst, message_label_updates_lst, deleted_messages_lst = \
+                self._db.get_labels_to_update(message_id_lst=message_id_lst)
+            self._db.mark_emails_as_deleted(message_id_lst=deleted_messages_lst)
+            self._db.update_labels(
+                message_id_lst=message_label_updates_lst,
+                message_meta_lst=self.get_labels_for_emails(
+                    message_id_lst=message_label_updates_lst
+                )
+            )
+            self._store_emails_in_database(new_messages_lst)
+
+    def get_labels_for_email(self, message_id):
+        return self._get_message_detail(
+            message_id=message_id,
+            format="metadata",
+            metadata_headers=["labelIds"]
+        )["labelIds"]
+
+    def get_labels_for_emails(self, message_id_lst):
+        return [self.get_labels_for_email(message_id=message_id) for message_id in message_id_lst]
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
@@ -125,9 +173,10 @@ class Gmail:
             config_json (str/ None): path to the config_json file, default ~/.pygmailfilter/config.json
         """
         if config_json is None:
-            config_json = os.path.join(self._config_path, "config.json")
-        with open(config_json) as f:
-            task_dict = json.load(f)
+            task_dict = self._config_dict
+        else:
+            with open(config_json) as f:
+                task_dict = json.load(f)
         for task, task_input in task_dict.items():
             if task == "remove_labels_from_emails":
                 self.remove_labels_from_emails(label_lst=task_input)
@@ -136,7 +185,7 @@ class Gmail:
                     label=task_input["label"],
                     filter_dict_lst=task_input["filter_dict_lst"],
                 )
-            else:
+            elif task != "database":
                 raise ValueError("Task not recognized: ", task)
 
     def save_attachments_of_label(self, label, path):
@@ -324,6 +373,15 @@ class Gmail:
         else:
             return message_items_lst
 
+    def _store_emails_in_database(self, message_id_lst):
+        df = self.download_messages_to_dataframe(message_id_lst=message_id_lst)
+        if len(df) > 0:
+            self._db.store_dataframe(df=df)
+
     @staticmethod
     def _get_message_ids(message_lst):
         return [d["id"] for d in message_lst]
+
+    @staticmethod
+    def _create_database(connection_str):
+        return DatabaseInterface(engine=create_engine(connection_str))
