@@ -1,36 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 Base = declarative_base()
-
-
-class Threads(Base):
-    __tablename__ = "threads"
-    id = Column(Integer, primary_key=True)
-    email_id = Column(String)
-    thread_id = Column(String)
-
-
-class Labels(Base):
-    __tablename__ = "labels"
-    id = Column(Integer, primary_key=True)
-    email_id = Column(String)
-    label_id = Column(String)
-
-
-class EmailTo(Base):
-    __tablename__ = "email_to"
-    id = Column(Integer, primary_key=True)
-    email_id = Column(String)
-    email_to = Column(String)
-
-
-class EmailFrom(Base):
-    __tablename__ = "email_from"
-    id = Column(Integer, primary_key=True)
-    email_id = Column(String)
-    email_from = Column(String)
 
 
 class EmailContent(Base):
@@ -40,6 +12,34 @@ class EmailContent(Base):
     email_subject = Column(String)
     email_content = Column(String)
     email_deleted = Column(Boolean)
+
+
+class Threads(Base):
+    __tablename__ = "threads"
+    id = Column(Integer, primary_key=True)
+    email_id = Column(String, ForeignKey("email_content.email_id"))
+    thread_id = Column(String)
+
+
+class Labels(Base):
+    __tablename__ = "labels"
+    id = Column(Integer, primary_key=True)
+    email_id = Column(String, ForeignKey("email_content.email_id"))
+    label_id = Column(String)
+
+
+class EmailTo(Base):
+    __tablename__ = "email_to"
+    id = Column(Integer, primary_key=True)
+    email_id = Column(String, ForeignKey("email_content.email_id"))
+    email_to = Column(String)
+
+
+class EmailFrom(Base):
+    __tablename__ = "email_from"
+    id = Column(Integer, primary_key=True)
+    email_id = Column(String, ForeignKey("email_content.email_id"))
+    email_from = Column(String)
 
 
 class DatabaseInterface:
@@ -166,7 +166,7 @@ class DatabaseInterface:
         self._session.commit()
 
     def _commit_content_table(self, df):
-        df_content = df.drop(["thread_id", "label_ids", "to", "from"], axis=1)
+        df_content = df.drop(labels=["thread_id", "label_ids", "to", "from"], axis=1, inplace=False)
         self._session.add_all(
             [
                 EmailContent(
