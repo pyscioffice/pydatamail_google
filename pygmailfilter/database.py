@@ -231,9 +231,11 @@ class DatabaseInterface:
             email_to_lst,
             email_threads_lst,
             email_labels_lst,
-            email_date_lst
+            email_date_lst,
         ) = ([], [], [], [], [], [], [], [])
-        for email_id, email_subject, email_content, email_date in tqdm(email_collect_lst):
+        for email_id, email_subject, email_content, email_date in tqdm(
+            email_collect_lst
+        ):
             email_from = [
                 email_from.email_from
                 for email_from in self._session.query(EmailFrom)
