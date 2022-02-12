@@ -94,14 +94,12 @@ class Gmail:
                     label_id_add_lst=[label_add],
                 )
 
-    def download_emails_to_database(self, message_id_lst):
+    def update_database(self):
         """
-        Download a list of messages based on their email IDs and store the content in a pandas.DataFrame.
-
-        Args:
-            message_id_lst (list): list of emails IDs
+        Update local email database
         """
         if self._db is not None:
+            message_id_lst = self.search_email(only_message_ids=True)
             new_messages_lst, message_label_updates_lst, deleted_messages_lst = \
                 self._db.get_labels_to_update(message_id_lst=message_id_lst)
             self._db.mark_emails_as_deleted(message_id_lst=deleted_messages_lst)
@@ -114,6 +112,15 @@ class Gmail:
             self._store_emails_in_database(new_messages_lst)
 
     def get_labels_for_email(self, message_id):
+        """
+        Get labels for email
+
+        Args:
+            message_id (str): email ID
+
+        Returns:
+            list: List of email labels
+        """
         return self._get_message_detail(
             message_id=message_id,
             format="metadata",
@@ -121,6 +128,15 @@ class Gmail:
         )["labelIds"]
 
     def get_labels_for_emails(self, message_id_lst):
+        """
+        Get labels for a list of emails
+
+        Args:
+            message_id_lst (list): list of emails IDs
+
+        Returns:
+            list: Nested list of email labels for each email
+        """
         return [self.get_labels_for_email(message_id=message_id) for message_id in message_id_lst]
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
