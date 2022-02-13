@@ -25,4 +25,4 @@ jobs:
         conda install -c conda-forge black
     - name: Test
       shell: bash -l {0}
-      run: black --check pygmailfilter
+      run: black --check pydatamail_google

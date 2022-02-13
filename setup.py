@@ -6,10 +6,10 @@ import versioneer
 
 
 setup(
-    name='pygmailfilter',
+    name='pydatamail_google',
     version=versioneer.get_version(),
     description='Python interface to filter emails on Google Mail.',
-    url='https://github.com/pyscioffice/pygmailfilter',
+    url='https://github.com/pyscioffice/pydatamail_google',
     author='Jan Janssen',
     author_email='jan.janssen@outlook.com',
     license='BSD',
@@ -34,7 +34,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
         "console_scripts": [
-            'pygmailfilter=pygmailfilter.__main__:command_line_parser'
+            'pydatamail_google=pydatamail_google.__main__:command_line_parser'
         ]
     }
 )

@@ -4,13 +4,13 @@ import pandas
 import shutil
 from tqdm import tqdm
 from sqlalchemy import create_engine
-from pygmailfilter.service import create_service, create_config_folder
-from pygmailfilter.message import Message, get_email_dict
-from pygmailfilter.drive import Drive
+from pydatamail_google.service import create_service, create_config_folder
+from pydatamail_google.message import Message, get_email_dict
+from pydatamail_google.drive import Drive
 from pydatamail import DatabaseInterface
 
 try:
-    from pygmailfilter.archive import (
+    from pydatamail_google.archive import (
         convert_eml_folder_to_pdf,
         get_date,
         save_message_to_eml,
@@ -22,16 +22,16 @@ except ImportError:
 
 class Gmail:
     def __init__(
-        self, client_service_file=None, userid="me", config_folder="~/.pygmailfilter"
+        self, client_service_file=None, userid="me", config_folder="~/.pydatamail_google"
     ):
         """
         Gmail class to manage Emails via the Gmail API directly from Python
 
         Args:
             client_service_file (str/ None): path to the credentials.json file
-                                             typically "~/.pygmailfilter/credentials.json"
+                                             typically "~/.pydatamail_google/credentials.json"
             userid (str): in most cases this should be simply "me"
-            config_folder (str): the folder for the configuration, typically "~/.pygmailfilter"
+            config_folder (str): the folder for the configuration, typically "~/.pydatamail_google"
         """
         connect_dict = {
             "api_name": "gmail",
@@ -215,10 +215,10 @@ class Gmail:
     def load_json_tasks(self, config_json=None):
         """
         Execute tasks defined in the JSON configuration. If no config_json file is provide the default location is:
-            "~/.pygmailfilter/config.json"
+            "~/.pydatamail_google/config.json"
 
         Args:
-            config_json (str/ None): path to the config_json file, default ~/.pygmailfilter/config.json
+            config_json (str/ None): path to the config_json file, default ~/.pydatamail_google/config.json
         """
         if config_json is None:
             task_dict = self._config_dict

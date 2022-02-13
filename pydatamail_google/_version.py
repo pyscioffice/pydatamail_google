@@ -40,9 +40,9 @@ def get_config():
     cfg = VersioneerConfig()
     cfg.VCS = "git"
     cfg.style = "pep440-pre"
-    cfg.tag_prefix = "pygmailfilter-"
-    cfg.parentdir_prefix = "pygmailfilter"
-    cfg.versionfile_source = "pygmailfilter/_version.py"
+    cfg.tag_prefix = "pydatamail_google-"
+    cfg.parentdir_prefix = "pydatamail_google"
+    cfg.versionfile_source = "pydatamail_google/_version.py"
     cfg.verbose = False
     return cfg
 

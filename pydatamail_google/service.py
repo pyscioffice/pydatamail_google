@@ -32,7 +32,7 @@ def create_service(
     return build(api_name, api_version, credentials=cred)
 
 
-def create_config_folder(config_folder="~/.pygmailfilter"):
+def create_config_folder(config_folder="~/.pydatamail_google"):
     config_path = os.path.abspath(os.path.expanduser(config_folder))
     os.makedirs(config_path, exist_ok=True)
     return config_path
