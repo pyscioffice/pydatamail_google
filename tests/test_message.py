@@ -1,4 +1,5 @@
 from unittest import TestCase
+from datetime import datetime
 from pygmailfilter.message import Message
 
 
@@ -14,7 +15,11 @@ class MessageTest(TestCase):
                     {"name": "Subject", "value": "Test Email Subject"},
                     {"name": "From", "value": "sender@server.net"},
                     {"name": "To", "value": "me@mail.com, friend@provider.org"},
-                ]
+                    {"name": "Date", "value": "Fri, 11 Feb 2022 18:08:46 +0100"}
+                ],
+                "body": {
+                    "data": ""
+                }
             }
         }
         cls.message = Message(message_dict=cls._message_dict)
@@ -38,7 +43,10 @@ class MessageTest(TestCase):
         self.assertEqual(self.message.get_label_ids(), ["important", "Label_123"])
 
     def test_get_date(self):
-        pass
+        self.assertEqual(
+            self.message.get_date(),
+            datetime.strptime("Fri, 11 Feb 2022 18:08:46 +0100", "%a, %d %b %Y %H:%M:%S %z")
+        )
 
     def test_get_content(self):
-        pass
+        self.assertEqual(self.message.get_content(), None)
