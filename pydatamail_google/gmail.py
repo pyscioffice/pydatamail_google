@@ -22,7 +22,10 @@ except ImportError:
 
 class Gmail:
     def __init__(
-        self, client_service_file=None, userid="me", config_folder="~/.pydatamail_google"
+        self,
+        client_service_file=None,
+        userid="me",
+        config_folder="~/.pydatamail_google",
     ):
         """
         Gmail class to manage Emails via the Gmail API directly from Python
