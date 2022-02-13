@@ -10,7 +10,12 @@ from pygmailfilter.drive import Drive
 from pydatamail import DatabaseInterface
 
 try:
-    from pygmailfilter.archive import convert_eml_folder_to_pdf, get_date, save_message_to_eml, merge_pdf
+    from pygmailfilter.archive import (
+        convert_eml_folder_to_pdf,
+        get_date,
+        save_message_to_eml,
+        merge_pdf,
+    )
 except ImportError:
     print("Archiving to Google Drive requires PyPDF2 and email2pdf.")
 
