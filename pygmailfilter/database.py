@@ -115,11 +115,29 @@ class DatabaseInterface:
                         ).filter(Labels.label_id == label_id).delete()
                 self._session.commit()
 
-    def get_all_emails(self):
-        email_collect_lst = [
-            [email.email_id, email.email_subject, email.email_content, email.email_date]
-            for email in self._session.query(EmailContent).all()
-        ]
+    def get_all_emails(self, include_deleted=False):
+        if include_deleted:
+            email_collect_lst = [
+                [
+                    email.email_id,
+                    email.email_subject,
+                    email.email_content,
+                    email.email_date,
+                ]
+                for email in self._session.query(EmailContent).all()
+            ]
+        else:
+            email_collect_lst = [
+                [
+                    email.email_id,
+                    email.email_subject,
+                    email.email_content,
+                    email.email_date,
+                ]
+                for email in self._session.query(EmailContent)
+                .filter(EmailContent.email_deleted == False)
+                .all()
+            ]
         return self._create_dataframe(email_collect_lst=email_collect_lst)
 
     def get_emails_by_label(self, label_id):

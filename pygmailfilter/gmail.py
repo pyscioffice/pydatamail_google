@@ -148,6 +148,18 @@ class Gmail:
             for message_id in message_id_lst
         ]
 
+    def get_all_emails_in_database(self, include_deleted=False):
+        """
+        Get all emails stored in local database
+
+        Args:
+            include_deleted (bool): Flag to include deleted emails - default False
+
+        Returns:
+            pandas.DataFrame: With all emails and the corresponding information
+        """
+        return self._db.get_all_emails(include_deleted=include_deleted)
+
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
         Search emails either by a specific query or optionally limit your search to a list of labels
