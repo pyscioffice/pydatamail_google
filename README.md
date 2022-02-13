@@ -1,4 +1,8 @@
 # Manage your emails in Gmail with Python 
+[![Python package](https://github.com/pyscioffice/pygmailfilter/actions/workflows/unittest.yml/badge.svg?branch=main)](https://github.com/pyscioffice/pygmailfilter/actions/workflows/unittest.yml)
+[![Coverage Status](https://coveralls.io/repos/github/pyscioffice/pygmailfilter/badge.svg?branch=main)](https://coveralls.io/github/pyscioffice/pygmailfilter?branch=main)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 The `pygmailfilter` is a python module to automate the filtering of emails on Gmail using the Gmail API. You can either
 write your own python script to combine the different functions or use the `JSON` based input or the command line input, 
 all three provide acccess to the same functionality and are explained in more detail below.
