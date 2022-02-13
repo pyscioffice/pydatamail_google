@@ -25,6 +25,12 @@ setup(
         'matplotlib==3.5.1',
         'pydatamail==0.0.1'
     ],
+    extras_require={
+        'archive': [
+            'pypdf2==1.26.0',
+            'email2pdf==0.9.9.0'
+        ]
+    },
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
         "console_scripts": [

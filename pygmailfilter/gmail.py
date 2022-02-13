@@ -1,12 +1,18 @@
 import os
 import json
 import pandas
+import shutil
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from pygmailfilter.service import create_service, create_config_folder
 from pygmailfilter.message import Message, get_email_dict
 from pygmailfilter.drive import Drive
-from pydatamail import DatabaseInterface
+from pydatamail import DatabaseInterface, convert_eml_folder_to_pdf, merge_pdf
+
+try:
+    from pygmailfilter.archive import get_date, save_message_to_eml, merge_pdf
+except ImportError:
+    print("Archiving to Google Drive requires PyPDF2 and email2pdf.")
 
 
 class Gmail:
@@ -267,6 +273,58 @@ class Gmail:
             ]
         )
 
+    def backup_emails_to_drive(self, label_to_backup, path, file_name="emails.pdf"):
+        """
+        Backup Emails to Google Drive by converting all emails to pdf and store the attachments in a sub folder named
+        attachments.
+
+        Args:
+            label_to_backup (str): Label to be backed up
+            path (str): Google drive path to backup emails to
+            file_name (str): file name for the pdf document
+        """
+        tmp_folder = "backup"
+        tmp_file = "result.pdf"
+
+        # Save attachments
+        self.save_attachments_of_label(
+            label=label_to_backup,
+            path=os.path.join(path, label_to_backup, "attachments"),
+        )
+
+        # Merge emails to pdf
+        all_message_in_label = self._save_label_to_eml(
+            label_to_backup=label_to_backup, folder_to_save_all_emails=tmp_folder
+        )
+        convert_eml_folder_to_pdf(folder_to_save_all_emails=tmp_folder)
+        message_sort_dict = {
+            message_detail["id"]: get_date(
+                message_details=self._get_message_detail(
+                    message_id=message_detail["id"]
+                )
+            )
+            for message_detail in all_message_in_label
+        }
+        merge_pdf(
+            folder_to_save_all_emails=tmp_folder,
+            message_sort_dict=message_sort_dict,
+            file_name=tmp_file,
+        )
+
+        # Upload pdf to Google Drive
+        drive = Drive(client_service_file=self._client_service_file)
+        folder_id = drive.get_path_id(path=os.path.join(path, label_to_backup))
+        file_metadata = {"name": file_name, "parents": [folder_id]}
+        drive.save_file(
+            path_to_file=os.path.expanduser(tmp_file),
+            file_metadata=file_metadata,
+            file_mimetype="application/pdf",
+        )
+
+        # Clean up
+        shutil.rmtree(tmp_folder)
+        os.remove(tmp_file)
+
     def get_email_dict(self, message_id):
         """
         Get the content of a given message as dictionary
@@ -314,6 +372,27 @@ class Gmail:
                         file_name=file_name,
                         folder_id=folder_id,
                     )
+
+    def _save_label_to_eml(self, label_to_backup, folder_to_save_all_emails):
+        all_message_in_label = self.search_email(label_lst=[label_to_backup])
+        if not all_message_in_label:
+            print("No email LM found.")
+        else:
+            for emails in tqdm(all_message_in_label):
+                messageraw = (
+                    self._service.users()
+                    .messages()
+                    .get(
+                        userId="me", id=emails["id"], format="raw", metadataHeaders=None
+                    )
+                    .execute()
+                )
+                save_message_to_eml(
+                    messageraw=messageraw,
+                    path_to_folder=folder_to_save_all_emails + "/" + messageraw["id"],
+                )
+
+        return all_message_in_label
 
     def _get_message_detail(self, message_id, format="metadata", metadata_headers=[]):
         return (
