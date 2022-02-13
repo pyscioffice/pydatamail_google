@@ -22,7 +22,8 @@ setup(
         'pandas==1.4.0',
         'sqlalchemy==1.4.31',
         'numpy==1.22.2',
-        'matplotlib==3.5.1'
+        'matplotlib==3.5.1',
+        'pydatamail==0.0.1'
     ],
     cmdclass=versioneer.get_cmdclass(),
     entry_points={

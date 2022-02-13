@@ -1,7 +1,7 @@
 import base64
-from datetime import datetime
 from html.parser import HTMLParser
 from io import StringIO
+from pydatamail import Message as AbstractMessage, email_date_converter
 
 
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
@@ -24,7 +24,7 @@ def get_email_dict(message):
     return Message(message_dict=message).to_dict()
 
 
-class Message:
+class Message(AbstractMessage):
     def __init__(self, message_dict):
         self._message_dict = message_dict
 
@@ -83,18 +83,6 @@ class Message:
         else:
             return None
 
-    def to_dict(self):
-        return {
-            "id": self.get_email_id(),
-            "thread_id": self.get_thread_id(),
-            "label_ids": self.get_label_ids(),
-            "to": self.get_to(),
-            "from": self.get_from(),
-            "subject": self.get_subject(),
-            "content": self.get_content(),
-            "date": self.get_date(),
-        }
-
     def _get_parts_content(self, message_parts):
         content_types = [p["mimeType"] for p in message_parts if "mimeType" in p.keys()]
         if "text/plain" in content_types:
@@ -142,14 +130,3 @@ class Message:
             return email.lower()
         else:
             return email_split[1].split(">")[0].lower()
-
-
-def email_date_converter(email_date):
-    if email_date[-3:-2].isalpha():
-        email_date = " ".join(email_date.split()[:-1])
-    if email_date[:3].isalpha() and email_date[-3] != ":":
-        return datetime.strptime(email_date, "%a, %d %b %Y %H:%M:%S %z")
-    elif email_date[-3] == ":":
-        return datetime.strptime(email_date, "%a, %d %b %Y %H:%M:%S")
-    else:
-        return datetime.strptime(email_date, "%d %b %Y %H:%M:%S %z")

@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from pygmailfilter.service import create_service, create_config_folder
 from pygmailfilter.message import Message, get_email_dict
 from pygmailfilter.drive import Drive
-from pygmailfilter.database import DatabaseInterface
+from pydatamail import DatabaseInterface
 
 
 class Gmail:
