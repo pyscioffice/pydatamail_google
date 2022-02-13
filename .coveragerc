@@ -1,0 +1,5 @@
+# .coveragerc to control coverage.py
+[run]
+source = pygmailfilter
+omit = pygmailfilter/_version.py
+concurrency = multiprocessing
