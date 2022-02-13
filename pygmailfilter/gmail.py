@@ -7,10 +7,10 @@ from sqlalchemy import create_engine
 from pygmailfilter.service import create_service, create_config_folder
 from pygmailfilter.message import Message, get_email_dict
 from pygmailfilter.drive import Drive
-from pydatamail import DatabaseInterface, convert_eml_folder_to_pdf, merge_pdf
+from pydatamail import DatabaseInterface
 
 try:
-    from pygmailfilter.archive import get_date, save_message_to_eml, merge_pdf
+    from pygmailfilter.archive import convert_eml_folder_to_pdf, get_date, save_message_to_eml, merge_pdf
 except ImportError:
     print("Archiving to Google Drive requires PyPDF2 and email2pdf.")
 
