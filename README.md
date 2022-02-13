@@ -29,7 +29,7 @@ Import the `pydatamail_google` module
 from pydatamail_google import Gmail
 ```
 
-## Initialize pygmailfilter 
+## Initialize pydatamail_google
 Create a `gmail` object from the `Gmail()` class
 ```
 gmail = Gmail()
