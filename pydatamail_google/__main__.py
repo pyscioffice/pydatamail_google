@@ -1,12 +1,12 @@
 import argparse
-from pygmailfilter.gmail import Gmail
+from pydatamail_google.gmail import Gmail
 
 
 def command_line_parser():
     """
     Main function primarly used for the command line interface
     """
-    parser = argparse.ArgumentParser(prog="pygmailfilter")
+    parser = argparse.ArgumentParser(prog="pydatamail_google")
     parser.add_argument(
         "-f",
         "--file",
@@ -33,7 +33,7 @@ def command_line_parser():
     parser.add_argument(
         "-c",
         "--config",
-        help="Configuration Folder e.g. ~/.pygmailfilter",
+        help="Configuration Folder e.g. ~/.pydatamail_google",
     )
     args = parser.parse_args()
     if args.config:

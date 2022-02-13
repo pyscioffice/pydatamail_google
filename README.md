@@ -1,14 +1,14 @@
 # Manage your emails in Gmail with Python 
-[![Python package](https://github.com/pyscioffice/pygmailfilter/actions/workflows/unittest.yml/badge.svg?branch=main)](https://github.com/pyscioffice/pygmailfilter/actions/workflows/unittest.yml)
-[![Coverage Status](https://coveralls.io/repos/github/pyscioffice/pygmailfilter/badge.svg?branch=main)](https://coveralls.io/github/pyscioffice/pygmailfilter?branch=main)
+[![Python package](https://github.com/pyscioffice/pydatamail_google/actions/workflows/unittest.yml/badge.svg?branch=main)](https://github.com/pyscioffice/pydatamail_google/actions/workflows/unittest.yml)
+[![Coverage Status](https://coveralls.io/repos/github/pyscioffice/pydatamail_google/badge.svg?branch=main)](https://coveralls.io/github/pyscioffice/pydatamail_google?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-The `pygmailfilter` is a python module to automate the filtering of emails on Gmail using the Gmail API. You can either
+The `pydatamail_google` is a python module to automate the filtering of emails on Gmail using the Gmail API. You can either
 write your own python script to combine the different functions or use the `JSON` based input or the command line input, 
 all three provide acccess to the same functionality and are explained in more detail below.
 
 # Configuration 
-The `pygmailfilter` stores the configuration files in the users home directory `~/.pygmailfilter`. This folder contains: 
+The `pydatamail_google` stores the configuration files in the users home directory `~/.pydatamail_google`. This folder contains: 
 
 - `config.json` the `JSON` configuration file for `JSON` based input, which is explained in more detial below.  
 - `credentials.json` the authentication credentials for the Google API, which at least requires access to Gmail and 
@@ -17,20 +17,16 @@ The `pygmailfilter` stores the configuration files in the users home directory `
   automatically, there should be no need for the user to modify these. 
 
 # Installation 
-Download the package from github using: 
+Install the package from github using `pip`: 
 ```
-git clone https://github.com/pyscioffice/pygmailfilter.git
+pip install git+https://github.com/pyscioffice/pydatamail_google.git
 ```
-Afterwards you can install it using pip: 
-```
-pip install . 
-```
-Finally setup the `credentials.json` in your Google Apps and store it in `~/.pygmailfilter/credentials.json`.
+Finally setup the `credentials.json` in your Google Apps and store it in `~/.pydatamail_google/credentials.json`.
 
 # Python interface 
-Import the `pygmailfiler` module 
+Import the `pydatamail_google` module 
 ```
-from pygmailfilter import Gmail
+from pydatamail_google import Gmail
 ```
 
 ## Initialize pygmailfilter 
@@ -39,7 +35,7 @@ Create a `gmail` object from the `Gmail()` class
 gmail = Gmail()
 ```
 For testing purposes you can use the optimal `client_service_file` parameter to specify the location of the 
-authentication credentials in case they are not stored in `~/.pygmailfilter/credentials.json`. 
+authentication credentials in case they are not stored in `~/.pydatamail_google/credentials.json`. 
 
 ## List Labels 
 List the available labels in your Gmail account:
@@ -88,7 +84,7 @@ This is the function for the file based interface, which is explained below in a
 ```
 gmail.load_json_tasks(config_json=None)
 ```
-By default the json config file is expected to be located in `~/.pygmailfilter/config.json`. 
+By default the json config file is expected to be located in `~/.pydatamail_google/config.json`. 
 
 ## Save attachments for a specific label 
 Save all attachments of emails marked with a selected label to a specific folder on Google drive. This requires
@@ -115,7 +111,7 @@ gmail.get_email_dict(message_id)
 The `message_id` can be derived from a function like `gmail.search_email()`. 
 
 ## Update database
-Update local database stored in `~/.pygmailfilter/email.db`:
+Update local database stored in `~/.pydatamail_google/email.db`:
 ```
 gmail.update_database()
 ```
@@ -123,10 +119,10 @@ gmail.update_database()
 # Command Line interface 
 The command line interface is currently rather limited, it supports the following options: 
 
-- `pygmailfilter` run the tasks defined in `~/.pygmailfilter/config.json`.
-- `pygmailfilter --file ~/.pygmailfilter/config.json` run the tasks defined in a user specific task file. 
-- `pygmailfilter --labels` list all labels of your Gmail account. 
-- `pygmailfilter --database` update local database. 
+- `pydatamail_google` run the tasks defined in `~/.pydatamail_google/config.json`.
+- `pydatamail_google--file ~/.pydatamail_google/config.json` run the tasks defined in a user specific task file. 
+- `pydatamail_google --labels` list all labels of your Gmail account. 
+- `pydatamail_google --database` update local database. 
 
 # File based interface 
 Currently the file based interface only supports two functions: 
@@ -135,10 +131,10 @@ Currently the file based interface only supports two functions:
 - `filter_label_by_sender` to filter emails using the filter dictionary list 
 
 Both functions are explained in more detail above in the python interface section. Below is an example configuration file
-which would be located at `~/.pygmailfilter/config.json`: 
+which would be located at `~/.pydatamail_google/config.json`: 
 ```
 {
-    "database": "sqlite:////~/.pygmailfilter/email.db",
+    "database": "sqlite:////~/.pydatamail_google/email.db",
     "remove_labels_from_emails": 
     ["CATEGORY_FORUMS", "CATEGORY_UPDATES", "CATEGORY_PROMOTIONS", "CATEGORY_SOCIAL"], 
     "filter_label_by_sender": {
