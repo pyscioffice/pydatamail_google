@@ -9,15 +9,15 @@ class DatabaseTest(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         df = pandas.DataFrame([{
-                'content': None,
-                'date': datetime.strptime("Fri, 11 Feb 2022 18:08:46 +0100", "%a, %d %b %Y %H:%M:%S %z"),
-                'from': 'sender@server.net',
-                'id': 'myid123',
-                'label_ids': ['important', 'Label_123'],
-                'subject': 'Test Email Subject',
-                'thread_id': 'abc123',
-                'to': ['me@mail.com', 'friend@provider.org']
-            }])
+            'content': None,
+            'date': datetime.strptime("Fri, 11 Feb 2022 18:08:46 +0100", "%a, %d %b %Y %H:%M:%S %z"),
+            'from': 'sender@server.net',
+            'id': 'myid123',
+            'label_ids': ['important', 'Label_123'],
+            'subject': 'Test Email Subject',
+            'thread_id': 'abc123',
+            'to': ['me@mail.com', 'friend@provider.org']
+        }])
         cls.database = DatabaseInterface(engine=create_engine('sqlite:///:memory:', echo=True))
         cls.database.store_dataframe(df=df)
 
