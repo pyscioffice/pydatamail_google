@@ -17,7 +17,7 @@ try:
         merge_pdf,
     )
 except ImportError:
-    print("Archiving to Google Drive requires PyPDF2 and email2pdf.")
+    print("Archiving to Google Drive requires PyPDF3 and email2pdf.")
 
 
 class Gmail:
