@@ -2,6 +2,7 @@ import os
 import json
 import pandas
 import shutil
+import warnings
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from pydatamail_google.service import create_service, create_config_folder
@@ -17,7 +18,7 @@ try:
         merge_pdf,
     )
 except ImportError:
-    print("Archiving to Google Drive requires PyPDF3 and email2pdf.")
+    warnings.warn("Archiving to Google Drive requires PyPDF3 and email2pdf.")
 
 
 class Gmail:
