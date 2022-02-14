@@ -27,7 +27,7 @@ setup(
     ],
     extras_require={
         'archive': [
-            'pypdf2==1.26.0',
+            'pypdf3==1.0.6',
             'email2pdf==0.9.9.0'
         ]
     },
