@@ -464,6 +464,6 @@ class GoogleMailBase:
     def _get_message_ids(message_lst):
         return [d["id"] for d in message_lst]
 
-    @staticmethod
-    def _create_database(connection_str):
+    @classmethod
+    def create_database(cls, connection_str):
         return DatabaseInterface(engine=create_engine(connection_str))
