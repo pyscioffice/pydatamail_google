@@ -73,7 +73,7 @@ def save_message_to_eml(messageraw, path_to_folder):
 
 
 def merge_pdf(
-    self, folder_to_save_all_emails, message_sort_dict, file_name="result.pdf"
+    folder_to_save_all_emails, message_sort_dict, file_name="result.pdf"
 ):
     pdf_file_lst = []
     for root, dirs, files in os.walk(folder_to_save_all_emails, topdown=False):
