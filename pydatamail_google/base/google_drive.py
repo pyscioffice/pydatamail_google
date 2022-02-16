@@ -1,37 +1,11 @@
 import io
-import os
 import base64
 from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload
-from pydatamail_google.service import create_service, create_config_folder
 
 
-class Drive:
-    def __init__(self, client_service_file=None, config_folder="~/.pydatamail_google"):
-        """
-        Google Drive class to manage files via the Google drive API directly from Python
-
-        Args:
-            client_service_file (str/ None): path to the credentials.json file
-                                             typically "~/.pydatamail_google/credentials.json"
-            config_folder (str): the folder for the configuration, typically "~/.pydatamail_google"
-        """
-        connect_dict = {
-            "api_name": "drive",
-            "api_version": "v3",
-            "scopes": ["https://www.googleapis.com/auth/drive"],
-        }
-        self._config_path = create_config_folder(config_folder=config_folder)
-        if client_service_file is None:
-            client_service_file = os.path.join(self._config_path, "credentials.json")
-
-        self._service = create_service(
-            client_secret_file=client_service_file,
-            api_name=connect_dict["api_name"],
-            api_version=connect_dict["api_version"],
-            scopes=connect_dict["scopes"],
-            prefix="",
-            working_dir=self._config_path,
-        )
+class GoogleDriveBase:
+    def __init__(self, service):
+        self._service = service
 
     def get_path_id(self, path):
         parent_folder_id = None

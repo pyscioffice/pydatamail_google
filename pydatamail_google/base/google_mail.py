@@ -5,13 +5,11 @@ import shutil
 import warnings
 from tqdm import tqdm
 from sqlalchemy import create_engine
-from pydatamail_google.service import create_service, create_config_folder
-from pydatamail_google.message import Message, get_email_dict
-from pydatamail_google.drive import Drive
+from pydatamail_google.base.message import Message, get_email_dict
 from pydatamail import DatabaseInterface
 
 try:
-    from pydatamail_google.archive import (
+    from pydatamail_google.base.archive import (
         convert_eml_folder_to_pdf,
         get_date,
         save_message_to_eml,
@@ -21,61 +19,15 @@ except ImportError:
     warnings.warn("Archiving to Google Drive requires PyPDF3 and email2pdf.")
 
 
-class Gmail:
+class GoogleMailBase:
     def __init__(
-        self,
-        client_service_file=None,
-        userid="me",
-        config_folder="~/.pydatamail_google",
+        self, google_mail_service, database=None, google_drive_service=None, userid="me"
     ):
-        """
-        Gmail class to manage Emails via the Gmail API directly from Python
-
-        Args:
-            client_service_file (str/ None): path to the credentials.json file
-                                             typically "~/.pydatamail_google/credentials.json"
-            userid (str): in most cases this should be simply "me"
-            config_folder (str): the folder for the configuration, typically "~/.pydatamail_google"
-        """
-        connect_dict = {
-            "api_name": "gmail",
-            "api_version": "v1",
-            "scopes": ["https://mail.google.com/"],
-        }
-
-        # Create config directory
-        self._config_path = create_config_folder(config_folder=config_folder)
-        if client_service_file is None:
-            client_service_file = os.path.join(self._config_path, "credentials.json")
-        self._client_service_file = client_service_file
-
-        # Read config file
-        config_file = os.path.join(self._config_path, "config.json")
-        if os.path.exists(config_file):
-            with open(config_file) as f:
-                self._config_dict = json.load(f)
-        else:
-            self._config_dict = {}
-
-        # Initialise service
+        self._service = google_mail_service
+        self._db = database
+        self._drive = google_drive_service
         self._userid = userid
-        self._service = create_service(
-            client_secret_file=self._client_service_file,
-            api_name=connect_dict["api_name"],
-            api_version=connect_dict["api_version"],
-            scopes=connect_dict["scopes"],
-            prefix="",
-            working_dir=self._config_path,
-        )
         self._label_dict = self._get_label_translate_dict()
-
-        # Initialize database
-        if "database" in self._config_dict.keys():
-            self._db = self._create_database(
-                connection_str=self._config_dict["database"]
-            )
-        else:
-            self._db = None
 
     @property
     def labels(self):
@@ -250,16 +202,17 @@ class Gmail:
             path (str): path inside google drive, for example "backup/emails". In this path a new subfolder for the
                         label is created.
         """
-        drive = Drive(client_service_file=self._client_service_file)
-        folder_id = drive.get_path_id(path=path)
-        files_lst = [d["name"] for d in drive.list_folder_content(folder_id)]
+        if self._drive is None:
+            raise ValueError("Google drive is not enabled.")
+
+        folder_id = self._drive.get_path_id(path=path)
+        files_lst = [d["name"] for d in self._drive.list_folder_content(folder_id)]
         query_string = "has:attachment"
         email_messages = self.search_email(
             query_string=query_string, label_lst=[label], only_message_ids=True
         )
         for email_message_id in tqdm(email_messages):
             self._save_attachments_of_message(
-                drive_service=drive,
                 email_message_id=email_message_id,
                 folder_id=folder_id,
                 exclude_files_lst=files_lst,
@@ -321,10 +274,12 @@ class Gmail:
         )
 
         # Upload pdf to Google Drive
-        drive = Drive(client_service_file=self._client_service_file)
-        folder_id = drive.get_path_id(path=os.path.join(path, label_to_backup))
+        if self._drive is None:
+            raise ValueError("Google drive is not enabled.")
+
+        folder_id = self._drive.get_path_id(path=os.path.join(path, label_to_backup))
         file_metadata = {"name": file_name, "parents": [folder_id]}
-        drive.save_file(
+        self._drive.save_file(
             path_to_file=os.path.expanduser(tmp_file),
             file_metadata=file_metadata,
             file_mimetype="application/pdf",
@@ -349,7 +304,7 @@ class Gmail:
         )
 
     def _save_attachments_of_message(
-        self, drive_service, email_message_id, folder_id, exclude_files_lst=[]
+        self, email_message_id, folder_id, exclude_files_lst=[]
     ):
         message_detail = self._get_message_detail(
             message_id=email_message_id, format="full", metadata_headers=["parts"]
@@ -375,7 +330,7 @@ class Gmail:
                         .execute()
                     )
 
-                    drive_service.save_gmail_attachment(
+                    self._drive.save_gmail_attachment(
                         response=response,
                         mime_type=mime_type,
                         file_name=file_name,

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from datetime import datetime
-from pydatamail_google.message import Message, get_email_dict
+from pydatamail_google.base.message import Message, get_email_dict
 
 
 class MessageTest(TestCase):

@@ -1,5 +1,5 @@
 import argparse
-from pydatamail_google.gmail import Gmail
+from pydatamail_google.local import Gmail
 
 
 def command_line_parser():

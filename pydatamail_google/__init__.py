@@ -1,2 +1,1 @@
-from pydatamail_google.gmail import Gmail
-from pydatamail_google.drive import Drive
+from pydatamail_google.local import Gmail, Drive
