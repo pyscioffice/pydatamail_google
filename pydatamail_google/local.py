@@ -8,7 +8,7 @@ from pydatamail_google.base import GoogleDriveBase, GoogleMailBase
 
 
 class Drive(GoogleDriveBase):
-    def __init__(self, client_service_file=None, config_folder="~/.pydatamail_google"):
+    def __init__(self, client_service_file=None, config_folder="~/.pydatamail"):
         """
         Google Drive class to manage files via the Google drive API directly from Python
 
@@ -22,12 +22,12 @@ class Drive(GoogleDriveBase):
             "api_version": "v3",
             "scopes": ["https://www.googleapis.com/auth/drive"],
         }
-        self._config_path = create_config_folder(config_folder=config_folder)
+        self._config_path = _create_config_folder(config_folder=config_folder)
         if client_service_file is None:
             client_service_file = os.path.join(self._config_path, "credentials.json")
 
         super().__init__(
-            create_service(
+            _create_service(
                 client_secret_file=client_service_file,
                 api_name=connect_dict["api_name"],
                 api_version=connect_dict["api_version"],
@@ -43,7 +43,7 @@ class Gmail(GoogleMailBase):
         self,
         client_service_file=None,
         userid="me",
-        config_folder="~/.pydatamail_google",
+        config_folder="~/.pydatamail",
         enable_google_drive=True,
     ):
         """
@@ -51,9 +51,9 @@ class Gmail(GoogleMailBase):
 
         Args:
             client_service_file (str/ None): path to the credentials.json file
-                                             typically "~/.pydatamail_google/credentials.json"
+                                             typically "~/.pydatamail/credentials.json"
             userid (str): in most cases this should be simply "me"
-            config_folder (str): the folder for the configuration, typically "~/.pydatamail_google"
+            config_folder (str): the folder for the configuration, typically "~/.pydatamail"
         """
         connect_dict = {
             "api_name": "gmail",
@@ -62,7 +62,7 @@ class Gmail(GoogleMailBase):
         }
 
         # Create config directory
-        self._config_path = create_config_folder(config_folder=config_folder)
+        self._config_path = _create_config_folder(config_folder=config_folder)
         if client_service_file is None:
             client_service_file = os.path.join(self._config_path, "credentials.json")
         self._client_service_file = client_service_file
@@ -76,7 +76,7 @@ class Gmail(GoogleMailBase):
             self._config_dict = {}
 
         # Initialise service
-        google_mail_service = create_service(
+        google_mail_service = _create_service(
             client_secret_file=self._client_service_file,
             api_name=connect_dict["api_name"],
             api_version=connect_dict["api_version"],
@@ -107,7 +107,7 @@ class Gmail(GoogleMailBase):
         )
 
 
-def create_service(
+def _create_service(
     client_secret_file, api_name, api_version, scopes, prefix="", working_dir=None
 ):
     cred = None
@@ -134,7 +134,7 @@ def create_service(
     return build(api_name, api_version, credentials=cred)
 
 
-def create_config_folder(config_folder="~/.pydatamail_google"):
+def _create_config_folder(config_folder="~/.pydatamail_google"):
     config_path = os.path.abspath(os.path.expanduser(config_folder))
     os.makedirs(config_path, exist_ok=True)
     return config_path

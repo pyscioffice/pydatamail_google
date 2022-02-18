@@ -8,7 +8,7 @@ write your own python script to combine the different functions or use the `JSON
 all three provide acccess to the same functionality and are explained in more detail below.
 
 # Configuration 
-The `pydatamail_google` stores the configuration files in the users home directory `~/.pydatamail_google`. This folder contains: 
+The `pydatamail_google` stores the configuration files in the users home directory `~/.pydatamail`. This folder contains: 
 
 - `config.json` the `JSON` configuration file for `JSON` based input, which is explained in more detial below.  
 - `credentials.json` the authentication credentials for the Google API, which at least requires access to Gmail and 
@@ -21,7 +21,7 @@ Install the package from github using `pip`:
 ```
 pip install git+https://github.com/pyscioffice/pydatamail_google.git
 ```
-Finally setup the `credentials.json` in your Google Apps and store it in `~/.pydatamail_google/credentials.json`.
+Finally setup the `credentials.json` in your Google Apps and store it in `~/.pydatamail/credentials.json`.
 
 # Python interface 
 Import the `pydatamail_google` module 
@@ -35,7 +35,7 @@ Create a `gmail` object from the `Gmail()` class
 gmail = Gmail()
 ```
 For testing purposes you can use the optimal `client_service_file` parameter to specify the location of the 
-authentication credentials in case they are not stored in `~/.pydatamail_google/credentials.json`. 
+authentication credentials in case they are not stored in `~/.pydatamail/credentials.json`. 
 
 ## List Labels 
 List the available labels in your Gmail account:
@@ -84,7 +84,7 @@ This is the function for the file based interface, which is explained below in a
 ```
 gmail.load_json_tasks(config_json=None)
 ```
-By default the json config file is expected to be located in `~/.pydatamail_google/config.json`. 
+By default the json config file is expected to be located in `~/.pydatamail/config.json`. 
 
 ## Save attachments for a specific label 
 Save all attachments of emails marked with a selected label to a specific folder on Google drive. This requires
@@ -111,7 +111,7 @@ gmail.get_email_dict(message_id)
 The `message_id` can be derived from a function like `gmail.search_email()`. 
 
 ## Update database
-Update local database stored in `~/.pydatamail_google/email.db`:
+Update local database stored in `~/.pydatamail/email.db`:
 ```
 gmail.update_database()
 ```
@@ -119,8 +119,8 @@ gmail.update_database()
 # Command Line interface 
 The command line interface is currently rather limited, it supports the following options: 
 
-- `pydatamail_google` run the tasks defined in `~/.pydatamail_google/config.json`.
-- `pydatamail_google--file ~/.pydatamail_google/config.json` run the tasks defined in a user specific task file. 
+- `pydatamail_google` run the tasks defined in `~/.pydatamail/config.json`.
+- `pydatamail_google --file ~/.pydatamail/config.json` run the tasks defined in a user specific task file. 
 - `pydatamail_google --labels` list all labels of your Gmail account. 
 - `pydatamail_google --database` update local database. 
 
@@ -131,10 +131,10 @@ Currently the file based interface only supports two functions:
 - `filter_label_by_sender` to filter emails using the filter dictionary list 
 
 Both functions are explained in more detail above in the python interface section. Below is an example configuration file
-which would be located at `~/.pydatamail_google/config.json`: 
+which would be located at `~/.pydatamail/config.json`: 
 ```
 {
-    "database": "sqlite:////~/.pydatamail_google/email.db",
+    "database": "sqlite:////~/.pydatamail/email.db",
     "remove_labels_from_emails": 
     ["CATEGORY_FORUMS", "CATEGORY_UPDATES", "CATEGORY_PROMOTIONS", "CATEGORY_SOCIAL"], 
     "filter_label_by_sender": {
