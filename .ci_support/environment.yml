@@ -13,5 +13,3 @@ dependencies:
 - numpy =1.22.2
 - matplotlib =3.5.1
 - pydatamail =0.0.2
-- email2pdf2 =0.0.3  # [linux]
-- pypdf3 =1.0.6  # [linux]
