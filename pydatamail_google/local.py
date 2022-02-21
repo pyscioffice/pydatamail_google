@@ -93,7 +93,7 @@ class Gmail(GoogleMailBase):
 
         # Initialize database
         if "database" in self._config_dict.keys():
-            database = self._create_database(
+            database = self.create_database(
                 connection_str=self._config_dict["database"]
             )
         else:
