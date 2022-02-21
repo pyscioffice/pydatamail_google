@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 from PyPDF3 import PdfFileMerger
-from email2pdf import (
+from email2pdf2 import (
     get_unique_version,
     get_input_email,
     handle_message_body,
