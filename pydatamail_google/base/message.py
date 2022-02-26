@@ -42,6 +42,11 @@ class Message(AbstractMessage):
             email_lst=self.get_header_field_from_message(field="To")
         )
 
+    def get_cc(self):
+        return self._split_emails(
+            email_lst=self.get_header_field_from_message(field="Cc")
+        )
+
     def get_label_ids(self):
         if "labelIds" in self._message_dict.keys():
             return self._message_dict["labelIds"]
