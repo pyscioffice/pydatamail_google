@@ -16,7 +16,7 @@ try:
         merge_pdf,
     )
 except ImportError:
-    warnings.warn("Archiving to Google Drive requires PyPDF3 and email2pdf.")
+    warnings.warn("Archiving to Google Drive requires PyPDF3 and email2pdf2.")
 
 
 class GoogleMailBase:
