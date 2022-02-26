@@ -113,9 +113,12 @@ class Message(AbstractMessage):
 
     @staticmethod
     def _get_email_body(message_parts):
-        return base64.urlsafe_b64decode(
-            message_parts["body"]["data"].encode("UTF-8")
-        ).decode("UTF-8")
+        if "data" in message_parts["body"].keys():
+            return base64.urlsafe_b64decode(
+                message_parts["body"]["data"].encode("UTF-8")
+            ).decode("UTF-8")
+        else:
+            return ""
 
     @staticmethod
     def _strip_tags(html):
