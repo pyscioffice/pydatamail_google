@@ -77,9 +77,12 @@ class GoogleMailBase:
                     label_id_add_lst=[label_add],
                 )
 
-    def update_database(self):
+    def update_database(self, quick=False):
         """
         Update local email database
+
+        Args:
+            quick (boolean): Only add new emails, do not update existing labels - by default: False
         """
         if self._db_email is not None:
             message_id_lst = self.search_email(only_message_ids=True)
@@ -90,16 +93,17 @@ class GoogleMailBase:
             ) = self._db_email.get_labels_to_update(
                 message_id_lst=message_id_lst, user_id=self._db_user_id
             )
-            self._db_email.mark_emails_as_deleted(
-                message_id_lst=deleted_messages_lst, user_id=self._db_user_id
-            )
-            self._db_email.update_labels(
-                message_id_lst=message_label_updates_lst,
-                message_meta_lst=self.get_labels_for_emails(
-                    message_id_lst=message_label_updates_lst
-                ),
-                user_id=self._db_user_id,
-            )
+            if not quick:
+                self._db_email.mark_emails_as_deleted(
+                    message_id_lst=deleted_messages_lst, user_id=self._db_user_id
+                )
+                self._db_email.update_labels(
+                    message_id_lst=message_label_updates_lst,
+                    message_meta_lst=self.get_labels_for_emails(
+                        message_id_lst=message_label_updates_lst
+                    ),
+                    user_id=self._db_user_id,
+                )
             self._store_emails_in_database(new_messages_lst)
 
     def get_labels_for_email(self, message_id):
@@ -166,8 +170,26 @@ class GoogleMailBase:
             user_id=self._db_user_id,
         )
 
+    def train_machine_learning_model(self, n_estimators=10, random_state=42):
+        """
+        Train internal machine learning models
+
+        Args:
+            n_estimators (int): Number of estimators
+            random_state (int): Random state
+        """
+        df_all = self.get_all_emails_in_database()
+        df_all_encode = one_hot_encoding(df=df_all)
+        self._db_ml.train_model(
+            df=df_all_encode,
+            labels_to_learn=None,
+            user_id=self._db_user_id,
+            n_estimators=n_estimators,
+            random_state=random_state,
+        )
+
     def get_machine_learning_recommendations(
-        self, label, n_estimators=10, random_state=42
+        self, label, n_estimators=10, random_state=42, recalculate=False
     ):
         """
         Train internal machine learning models to predict email sorting.
@@ -176,6 +198,7 @@ class GoogleMailBase:
             label (str): Email label to filter for
             n_estimators (int): Number of estimators
             random_state (int): Random state
+            recalculate (boolean): Train the model again
 
         Returns:
             dict: Email IDs and the corresponding label ID.
@@ -190,7 +213,11 @@ class GoogleMailBase:
         df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
 
         models = self._db_ml.get_models(
-            df=df_all_encode, n_estimators=n_estimators, random_state=random_state
+            df=df_all_encode,
+            n_estimators=n_estimators,
+            random_state=random_state,
+            user_id=self._db_user_id,
+            recalculate=recalculate,
         )
         predictions = {
             k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
