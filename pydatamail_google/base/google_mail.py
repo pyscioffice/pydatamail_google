@@ -6,7 +6,7 @@ import warnings
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from pydatamail_google.base.message import Message, get_email_dict
-from pydatamail import DatabaseInterface
+from pydatamail import get_email_database
 
 try:
     from pydatamail_google.base.archive import (
@@ -466,4 +466,6 @@ class GoogleMailBase:
 
     @classmethod
     def create_database(cls, connection_str):
-        return DatabaseInterface(engine=create_engine(connection_str))
+        return get_email_database(
+            engine=create_engine(connection_str), session=None, user_id=1
+        )
