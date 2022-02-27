@@ -45,7 +45,7 @@ class Gmail(GoogleMailBase):
         user_id="me",
         config_folder="~/.pydatamail",
         enable_google_drive=True,
-        db_user_id=1
+        db_user_id=1,
     ):
         """
         Gmail class to manage Emails via the Gmail API directly from Python
@@ -106,7 +106,7 @@ class Gmail(GoogleMailBase):
             database_ml=database_ml,
             google_drive_service=google_drive_service,
             user_id=user_id,
-            db_user_id=db_user_id
+            db_user_id=db_user_id,
         )
 
 

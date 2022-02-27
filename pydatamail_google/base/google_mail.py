@@ -7,7 +7,11 @@ from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
-from pydatamail import get_email_database, one_hot_encoding, get_machine_learning_database
+from pydatamail import (
+    get_email_database,
+    one_hot_encoding,
+    get_machine_learning_database,
+)
 
 try:
     from pydatamail_google.base.archive import (
@@ -147,8 +151,10 @@ class GoogleMailBase:
         """
         Train internal machine learning models to predict email sorting.
         """
-        df_email = one_hot_encoding(df=self.get_all_emails_in_database())
-        self._db_ml.get_models(df=df_email, user_id=self._db_user_id)
+        self._db_ml.get_models(
+            df=one_hot_encoding(df=self.get_all_emails_in_database()),
+            user_id=self._db_user_id,
+        )
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
