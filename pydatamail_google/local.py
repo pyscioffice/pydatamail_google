@@ -42,7 +42,7 @@ class Gmail(GoogleMailBase):
     def __init__(
         self,
         client_service_file=None,
-        userid="me",
+        user_id="me",
         config_folder="~/.pydatamail",
         enable_google_drive=True,
     ):
@@ -103,7 +103,8 @@ class Gmail(GoogleMailBase):
             google_mail_service=google_mail_service,
             database=database,
             google_drive_service=google_drive_service,
-            userid=userid,
+            user_id=user_id,
+            db_user_id=1
         )
 
 

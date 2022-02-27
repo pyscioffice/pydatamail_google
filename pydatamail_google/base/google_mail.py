@@ -22,12 +22,18 @@ except ImportError:
 
 class GoogleMailBase:
     def __init__(
-        self, google_mail_service, database=None, google_drive_service=None, userid="me"
+        self,
+        google_mail_service,
+        database=None,
+        google_drive_service=None,
+        user_id="me",
+        db_user_id=1,
     ):
         self._service = google_mail_service
         self._db = database
+        self._db_user_id = db_user_id
         self._drive = google_drive_service
-        self._userid = userid
+        self._userid = user_id
         self._label_dict = self._get_label_translate_dict()
 
     @property
@@ -73,13 +79,18 @@ class GoogleMailBase:
                 new_messages_lst,
                 message_label_updates_lst,
                 deleted_messages_lst,
-            ) = self._db.get_labels_to_update(message_id_lst=message_id_lst)
-            self._db.mark_emails_as_deleted(message_id_lst=deleted_messages_lst)
+            ) = self._db.get_labels_to_update(
+                message_id_lst=message_id_lst, user_id=self._db_user_id
+            )
+            self._db.mark_emails_as_deleted(
+                message_id_lst=deleted_messages_lst, user_id=self._db_user_id
+            )
             self._db.update_labels(
                 message_id_lst=message_label_updates_lst,
                 message_meta_lst=self.get_labels_for_emails(
                     message_id_lst=message_label_updates_lst
                 ),
+                user_id=self._db_user_id,
             )
             self._store_emails_in_database(new_messages_lst)
 
@@ -126,7 +137,9 @@ class GoogleMailBase:
         Returns:
             pandas.DataFrame: With all emails and the corresponding information
         """
-        return self._db.get_all_emails(include_deleted=include_deleted)
+        return self._db.get_all_emails(
+            include_deleted=include_deleted, user_id=self._db_user_id
+        )
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
@@ -459,7 +472,7 @@ class GoogleMailBase:
     def _store_emails_in_database(self, message_id_lst):
         df = self.download_messages_to_dataframe(message_id_lst=message_id_lst)
         if len(df) > 0:
-            self._db.store_dataframe(df=df)
+            self._db.store_dataframe(df=df, user_id=self._db_user_id)
 
     @staticmethod
     def _get_message_ids(message_lst):
@@ -468,6 +481,4 @@ class GoogleMailBase:
     @classmethod
     def create_database(cls, connection_str):
         engine = create_engine(connection_str)
-        return get_email_database(
-            engine=engine, session=sessionmaker(bind=engine)()
-        )
+        return get_email_database(engine=engine, session=sessionmaker(bind=engine)())
