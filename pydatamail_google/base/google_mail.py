@@ -48,6 +48,40 @@ class GoogleMailBase:
     def labels(self):
         return list(self._label_dict.keys())
 
+    def filter_label_by_machine_learning(
+        self,
+        label,
+        n_estimators=10,
+        random_state=42,
+        recalculate=False,
+        include_deleted=False
+    ):
+        """
+        Filter emails based on machine learning model recommendations.
+
+        Args:
+            label (str): Email label to filter for
+            n_estimators (int): Number of estimators
+            random_state (int): Random state
+            recalculate (boolean): Train the model again
+            include_deleted (boolean): Include deleted emails in training
+        """
+        model_recommendation_dict = self._get_machine_learning_recommendations(
+            label=label,
+            n_estimators=n_estimators,
+            random_state=random_state,
+            recalculate=recalculate,
+            include_deleted=include_deleted,
+        )
+        label_existing = self._label_dict[label]
+        for message_id, label_add in model_recommendation_dict.items():
+            if label_add != label_existing:
+                self._modify_message_labels(
+                    message_id=message_id,
+                    label_id_remove_lst=[label_existing],
+                    label_id_add_lst=[label_add],
+                )
+
     def filter_label_by_sender(self, label, filter_dict_lst):
         """
         Filter emails in a given email label by applying a list of email filters, only the first filter that matches is
@@ -190,56 +224,6 @@ class GoogleMailBase:
             n_estimators=n_estimators,
             random_state=random_state,
         )
-
-    def get_machine_learning_recommendations(
-        self,
-        label,
-        n_estimators=10,
-        random_state=42,
-        recalculate=False,
-        include_deleted=False,
-    ):
-        """
-        Train internal machine learning models to predict email sorting.
-
-        Args:
-            label (str): Email label to filter for
-            n_estimators (int): Number of estimators
-            random_state (int): Random state
-            recalculate (boolean): Train the model again
-            include_deleted (boolean): Include deleted emails in training
-
-        Returns:
-            dict: Email IDs and the corresponding label ID.
-        """
-        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
-        df_all_encode = one_hot_encoding(df=df_all)
-        df_select = self.get_emails_by_label(label=label, include_deleted=False)
-        df_select_hot = one_hot_encoding(
-            df=df_select, label_lst=df_all_encode.columns.values
-        )
-        labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
-        df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
-
-        models = self._db_ml.get_models(
-            df=df_all_encode,
-            n_estimators=n_estimators,
-            random_state=random_state,
-            user_id=self._db_user_id,
-            recalculate=recalculate,
-        )
-        predictions = {
-            k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
-        }
-        label_lst = list(predictions.keys())
-        prediction_array = np.array(list(predictions.values())).T
-        new_label_lst = [
-            label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
-        ]
-        return {
-            email_id: label
-            for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
-        }
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
@@ -416,6 +400,56 @@ class GoogleMailBase:
         return get_email_dict(
             message=self._get_message_detail(message_id=message_id, format="full")
         )
+
+    def _get_machine_learning_recommendations(
+        self,
+        label,
+        n_estimators=10,
+        random_state=42,
+        recalculate=False,
+        include_deleted=False,
+    ):
+        """
+        Train internal machine learning models to predict email sorting.
+
+        Args:
+            label (str): Email label to filter for
+            n_estimators (int): Number of estimators
+            random_state (int): Random state
+            recalculate (boolean): Train the model again
+            include_deleted (boolean): Include deleted emails in training
+
+        Returns:
+            dict: Email IDs and the corresponding label ID.
+        """
+        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
+        df_all_encode = one_hot_encoding(df=df_all)
+        df_select = self.get_emails_by_label(label=label, include_deleted=False)
+        df_select_hot = one_hot_encoding(
+            df=df_select, label_lst=df_all_encode.columns.values
+        )
+        labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
+        df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
+
+        models = self._db_ml.get_models(
+            df=df_all_encode,
+            n_estimators=n_estimators,
+            random_state=random_state,
+            user_id=self._db_user_id,
+            recalculate=recalculate,
+        )
+        predictions = {
+            k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
+        }
+        label_lst = list(predictions.keys())
+        prediction_array = np.array(list(predictions.values())).T
+        new_label_lst = [
+            label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
+        ]
+        return {
+            email_id: label
+            for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
+        }
 
     def _save_attachments_of_message(
         self, email_message_id, folder_id, exclude_files_lst=[]
