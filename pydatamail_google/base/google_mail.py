@@ -3,10 +3,16 @@ import json
 import pandas
 import shutil
 import warnings
+import numpy as np
 from tqdm import tqdm
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
-from pydatamail import DatabaseInterface
+from pydatamail import (
+    get_email_database,
+    one_hot_encoding,
+    get_machine_learning_database,
+)
 
 try:
     from pydatamail_google.base.archive import (
@@ -21,13 +27,22 @@ except ImportError:
 
 class GoogleMailBase:
     def __init__(
-        self, google_mail_service, database=None, google_drive_service=None, userid="me"
+        self,
+        google_mail_service,
+        database_email=None,
+        database_ml=None,
+        google_drive_service=None,
+        user_id="me",
+        db_user_id=1,
     ):
         self._service = google_mail_service
-        self._db = database
+        self._db_email = database_email
+        self._db_ml = database_ml
+        self._db_user_id = db_user_id
         self._drive = google_drive_service
-        self._userid = userid
+        self._userid = user_id
         self._label_dict = self._get_label_translate_dict()
+        self._label_dict_inverse = {v: k for k, v in self._label_dict.items()}
 
     @property
     def labels(self):
@@ -66,19 +81,24 @@ class GoogleMailBase:
         """
         Update local email database
         """
-        if self._db is not None:
+        if self._db_email is not None:
             message_id_lst = self.search_email(only_message_ids=True)
             (
                 new_messages_lst,
                 message_label_updates_lst,
                 deleted_messages_lst,
-            ) = self._db.get_labels_to_update(message_id_lst=message_id_lst)
-            self._db.mark_emails_as_deleted(message_id_lst=deleted_messages_lst)
-            self._db.update_labels(
+            ) = self._db_email.get_labels_to_update(
+                message_id_lst=message_id_lst, user_id=self._db_user_id
+            )
+            self._db_email.mark_emails_as_deleted(
+                message_id_lst=deleted_messages_lst, user_id=self._db_user_id
+            )
+            self._db_email.update_labels(
                 message_id_lst=message_label_updates_lst,
                 message_meta_lst=self.get_labels_for_emails(
                     message_id_lst=message_label_updates_lst
                 ),
+                user_id=self._db_user_id,
             )
             self._store_emails_in_database(new_messages_lst)
 
@@ -117,7 +137,7 @@ class GoogleMailBase:
 
     def get_all_emails_in_database(self, include_deleted=False):
         """
-        Get all emails stored in local database
+        Get all emails stored in the local database
 
         Args:
             include_deleted (bool): Flag to include deleted emails - default False
@@ -125,7 +145,65 @@ class GoogleMailBase:
         Returns:
             pandas.DataFrame: With all emails and the corresponding information
         """
-        return self._db.get_all_emails(include_deleted=include_deleted)
+        return self._db_email.get_all_emails(
+            include_deleted=include_deleted, user_id=self._db_user_id
+        )
+
+    def get_emails_by_label(self, label, include_deleted=False):
+        """
+        Get all emails stored in the local database for a specific label
+
+        Args:
+            label (str): Email label to filter for
+            include_deleted (bool): Flag to include deleted emails - default False
+
+        Returns:
+            pandas.DataFrame: With all emails and the corresponding information
+        """
+        return self._db_email.get_emails_by_label(
+            label_id=self._label_dict[label],
+            include_deleted=include_deleted,
+            user_id=self._db_user_id,
+        )
+
+    def get_machine_learning_recommendations(
+        self, label, n_estimators=10, random_state=42
+    ):
+        """
+        Train internal machine learning models to predict email sorting.
+
+        Args:
+            label (str): Email label to filter for
+            n_estimators (int): Number of estimators
+            random_state (int): Random state
+
+        Returns:
+            dict: Email IDs and the corresponding label ID.
+        """
+        df_all = self.get_all_emails_in_database()
+        df_all_encode = one_hot_encoding(df=df_all)
+        df_select = self.get_emails_by_label(label=label, include_deleted=False)
+        df_select_hot = one_hot_encoding(
+            df=df_select, label_lst=df_all_encode.columns.values
+        )
+        labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
+        df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
+
+        models = self._db_ml.get_models(
+            df=df_all_encode, n_estimators=n_estimators, random_state=random_state
+        )
+        predictions = {
+            k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
+        }
+        label_lst = list(predictions.keys())
+        prediction_array = np.array(list(predictions.values())).T
+        new_label_lst = [
+            label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
+        ]
+        return {
+            email_id: label
+            for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
+        }
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
@@ -458,7 +536,7 @@ class GoogleMailBase:
     def _store_emails_in_database(self, message_id_lst):
         df = self.download_messages_to_dataframe(message_id_lst=message_id_lst)
         if len(df) > 0:
-            self._db.store_dataframe(df=df)
+            self._db_email.store_dataframe(df=df, user_id=self._db_user_id)
 
     @staticmethod
     def _get_message_ids(message_lst):
@@ -466,4 +544,8 @@ class GoogleMailBase:
 
     @classmethod
     def create_database(cls, connection_str):
-        return DatabaseInterface(engine=create_engine(connection_str))
+        engine = create_engine(connection_str)
+        session = sessionmaker(bind=engine)()
+        db_email = get_email_database(engine=engine, session=session)
+        db_ml = get_machine_learning_database(engine=engine, session=session)
+        return db_email, db_ml
