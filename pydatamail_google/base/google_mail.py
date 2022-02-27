@@ -54,7 +54,7 @@ class GoogleMailBase:
         n_estimators=10,
         random_state=42,
         recalculate=False,
-        include_deleted=False
+        include_deleted=False,
     ):
         """
         Filter emails based on machine learning model recommendations.
