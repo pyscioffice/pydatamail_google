@@ -3,6 +3,7 @@ import json
 import pandas
 import shutil
 import warnings
+import numpy as np
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -41,6 +42,7 @@ class GoogleMailBase:
         self._drive = google_drive_service
         self._userid = user_id
         self._label_dict = self._get_label_translate_dict()
+        self._label_dict_inverse = {v: k for k, v in self._label_dict.items()}
 
     @property
     def labels(self):
@@ -135,7 +137,7 @@ class GoogleMailBase:
 
     def get_all_emails_in_database(self, include_deleted=False):
         """
-        Get all emails stored in local database
+        Get all emails stored in the local database
 
         Args:
             include_deleted (bool): Flag to include deleted emails - default False
@@ -147,14 +149,61 @@ class GoogleMailBase:
             include_deleted=include_deleted, user_id=self._db_user_id
         )
 
-    def update_machine_learning_models(self):
+    def get_emails_by_label(self, label, include_deleted=False):
         """
-        Train internal machine learning models to predict email sorting.
+        Get all emails stored in the local database for a specific label
+
+        Args:
+            label (str): Email label to filter for
+            include_deleted (bool): Flag to include deleted emails - default False
+
+        Returns:
+            pandas.DataFrame: With all emails and the corresponding information
         """
-        self._db_ml.get_models(
-            df=one_hot_encoding(df=self.get_all_emails_in_database()),
+        return self._db_email.get_emails_by_label(
+            label_id=self._label_dict[label],
+            include_deleted=include_deleted,
             user_id=self._db_user_id,
         )
+
+    def get_machine_learning_recommendations(
+        self, label, n_estimators=10, random_state=42
+    ):
+        """
+        Train internal machine learning models to predict email sorting.
+
+        Args:
+            label (str): Email label to filter for
+            n_estimators (int): Number of estimators
+            random_state (int): Random state
+
+        Returns:
+            dict: Email IDs and the corresponding label ID.
+        """
+        df_all = self.get_all_emails_in_database()
+        df_all_encode = one_hot_encoding(df=df_all)
+        df_select = self.get_emails_by_label(label=label, include_deleted=False)
+        df_select_hot = one_hot_encoding(
+            df=df_select, label_lst=df_all_encode.columns.values
+        )
+        labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
+        df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
+
+        models = self._db_ml.get_models(
+            df=df_all_encode, n_estimators=n_estimators, random_state=random_state
+        )
+        predictions = {
+            k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
+        }
+        label_lst = list(predictions.keys())
+        prediction_array = np.array(list(predictions.values())).T
+        new_label_lst = [
+            label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
+        ]
+        return {
+            email_id: label
+            for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
+        }
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
