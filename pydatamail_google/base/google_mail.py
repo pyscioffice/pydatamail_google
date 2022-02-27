@@ -5,6 +5,7 @@ import shutil
 import warnings
 from tqdm import tqdm
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
 from pydatamail import get_email_database
 
@@ -466,6 +467,7 @@ class GoogleMailBase:
 
     @classmethod
     def create_database(cls, connection_str):
+        engine = create_engine(connection_str)
         return get_email_database(
-            engine=create_engine(connection_str), session=None, user_id=1
+            engine=engine, session=sessionmaker(bind=engine)()
         )
