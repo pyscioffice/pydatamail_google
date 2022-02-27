@@ -170,15 +170,18 @@ class GoogleMailBase:
             user_id=self._db_user_id,
         )
 
-    def train_machine_learning_model(self, n_estimators=10, random_state=42):
+    def train_machine_learning_model(
+        self, n_estimators=10, random_state=42, include_deleted=False
+    ):
         """
         Train internal machine learning models
 
         Args:
             n_estimators (int): Number of estimators
             random_state (int): Random state
+            include_deleted (boolean): Include deleted emails in training
         """
-        df_all = self.get_all_emails_in_database()
+        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
         df_all_encode = one_hot_encoding(df=df_all)
         self._db_ml.train_model(
             df=df_all_encode,
@@ -189,7 +192,12 @@ class GoogleMailBase:
         )
 
     def get_machine_learning_recommendations(
-        self, label, n_estimators=10, random_state=42, recalculate=False
+        self,
+        label,
+        n_estimators=10,
+        random_state=42,
+        recalculate=False,
+        include_deleted=False,
     ):
         """
         Train internal machine learning models to predict email sorting.
@@ -199,11 +207,12 @@ class GoogleMailBase:
             n_estimators (int): Number of estimators
             random_state (int): Random state
             recalculate (boolean): Train the model again
+            include_deleted (boolean): Include deleted emails in training
 
         Returns:
             dict: Email IDs and the corresponding label ID.
         """
-        df_all = self.get_all_emails_in_database()
+        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
         df_all_encode = one_hot_encoding(df=df_all)
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
         df_select_hot = one_hot_encoding(
