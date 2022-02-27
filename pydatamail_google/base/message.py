@@ -101,11 +101,15 @@ class Message(AbstractMessage):
                 )
             )
         elif "multipart/alternative" in content_types:
-            return self._get_parts_content(
-                message_parts=message_parts[
-                    content_types.index("multipart/alternative")
-                ]["parts"]
-            )
+            multi_part_content = message_parts[
+                content_types.index("multipart/alternative")
+            ]
+            if "parts" in multi_part_content:
+                return self._get_parts_content(
+                    message_parts=multi_part_content["parts"]
+                )
+            else:
+                return None
         else:
             return None
 
@@ -118,7 +122,7 @@ class Message(AbstractMessage):
 
     @staticmethod
     def _get_email_body(message_parts):
-        if "data" in message_parts["body"].keys():
+        if "body" in message_parts.keys() and "data" in message_parts["body"].keys():
             return base64.urlsafe_b64decode(
                 message_parts["body"]["data"].encode("UTF-8")
             ).decode("UTF-8")

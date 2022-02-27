@@ -111,12 +111,13 @@ class GoogleMailBase:
                     label_id_add_lst=[label_add],
                 )
 
-    def update_database(self, quick=False):
+    def update_database(self, quick=False, format="full"):
         """
         Update local email database
 
         Args:
             quick (boolean): Only add new emails, do not update existing labels - by default: False
+            format (str): Email format to download - default: "full"
         """
         if self._db_email is not None:
             message_id_lst = self.search_email(only_message_ids=True)
@@ -138,7 +139,9 @@ class GoogleMailBase:
                     ),
                     user_id=self._db_user_id,
                 )
-            self._store_emails_in_database(new_messages_lst)
+            self._store_emails_in_database(
+                message_id_lst=new_messages_lst, format=format
+            )
 
     def get_labels_for_email(self, message_id):
         """
@@ -316,19 +319,20 @@ class GoogleMailBase:
                 exclude_files_lst=files_lst,
             )
 
-    def download_messages_to_dataframe(self, message_id_lst):
+    def download_messages_to_dataframe(self, message_id_lst, format="full"):
         """
         Download a list of messages based on their email IDs and store the content in a pandas.DataFrame.
 
         Args:
             message_id_lst (list): list of emails IDs
+            format (str): Email format to download - default: "full"
 
         Returns:
             pandas.DataFrame: pandas.DataFrame which contains the rendered emails
         """
         return pandas.DataFrame(
             [
-                self.get_email_dict(message_id=message_id)
+                self.get_email_dict(message_id=message_id, format=format)
                 for message_id in tqdm(message_id_lst)
             ]
         )
@@ -387,18 +391,19 @@ class GoogleMailBase:
         shutil.rmtree(tmp_folder)
         os.remove(tmp_file)
 
-    def get_email_dict(self, message_id):
+    def get_email_dict(self, message_id, format="full"):
         """
         Get the content of a given message as dictionary
 
         Args:
-            message_id (str):
+            message_id (str): Email id
+            format (str): Email format to download - default: "full"
 
         Returns:
             dict: Dictionary with the message content
         """
         return get_email_dict(
-            message=self._get_message_detail(message_id=message_id, format="full")
+            message=self._get_message_detail(message_id=message_id, format=format)
         )
 
     def _get_machine_learning_recommendations(
@@ -603,8 +608,10 @@ class GoogleMailBase:
         else:
             return message_items_lst
 
-    def _store_emails_in_database(self, message_id_lst):
-        df = self.download_messages_to_dataframe(message_id_lst=message_id_lst)
+    def _store_emails_in_database(self, message_id_lst, format="full"):
+        df = self.download_messages_to_dataframe(
+            message_id_lst=message_id_lst, format=format
+        )
         if len(df) > 0:
             self._db_email.store_dataframe(df=df, user_id=self._db_user_id)
 
