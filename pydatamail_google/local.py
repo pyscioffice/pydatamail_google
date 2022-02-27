@@ -94,15 +94,16 @@ class Gmail(GoogleMailBase):
 
         # Initialize database
         if "database" in self._config_dict.keys():
-            database = self.create_database(
+            database_email, database_ml = self.create_database(
                 connection_str=self._config_dict["database"]
             )
         else:
-            database = None
+            database_email, database_ml = None, None
 
         super().__init__(
             google_mail_service=google_mail_service,
-            database=database,
+            database_email=database_email,
+            database_ml=database_ml,
             google_drive_service=google_drive_service,
             user_id=user_id,
             db_user_id=db_user_id
