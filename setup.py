@@ -18,7 +18,7 @@ setup(
         'google-api-python-client==2.38.0',
         'google-auth==2.6.0',
         'google-auth-oauthlib==0.4.6',
-        'tqdm==4.62.3',
+        'tqdm==4.63.0',
         'pandas==1.4.1',
         'sqlalchemy==1.4.31',
         'numpy==1.22.2',
