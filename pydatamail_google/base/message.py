@@ -42,6 +42,11 @@ class Message(AbstractMessage):
             email_lst=self.get_header_field_from_message(field="To")
         )
 
+    def get_cc(self):
+        return self._split_emails(
+            email_lst=self.get_header_field_from_message(field="Cc")
+        )
+
     def get_label_ids(self):
         if "labelIds" in self._message_dict.keys():
             return self._message_dict["labelIds"]
@@ -96,11 +101,15 @@ class Message(AbstractMessage):
                 )
             )
         elif "multipart/alternative" in content_types:
-            return self._get_parts_content(
-                message_parts=message_parts[
-                    content_types.index("multipart/alternative")
-                ]["parts"]
-            )
+            multi_part_content = message_parts[
+                content_types.index("multipart/alternative")
+            ]
+            if "parts" in multi_part_content:
+                return self._get_parts_content(
+                    message_parts=multi_part_content["parts"]
+                )
+            else:
+                return None
         else:
             return None
 
@@ -113,9 +122,12 @@ class Message(AbstractMessage):
 
     @staticmethod
     def _get_email_body(message_parts):
-        return base64.urlsafe_b64decode(
-            message_parts["body"]["data"].encode("UTF-8")
-        ).decode("UTF-8")
+        if "body" in message_parts.keys() and "data" in message_parts["body"].keys():
+            return base64.urlsafe_b64decode(
+                message_parts["body"]["data"].encode("UTF-8")
+            ).decode("UTF-8")
+        else:
+            return ""
 
     @staticmethod
     def _strip_tags(html):

@@ -55,6 +55,7 @@ class MessageTest(TestCase):
         self.assertEqual(
             get_email_dict(self._message_dict),
             {
+                'cc': [],
                 'content': None,
                 'date': datetime.strptime("Fri, 11 Feb 2022 18:08:46 +0100", "%a, %d %b %Y %H:%M:%S %z"),
                 'from': 'sender@server.net',
