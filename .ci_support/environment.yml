@@ -9,7 +9,7 @@ dependencies:
 - google-auth-oauthlib =0.5.0
 - tqdm =4.63.0
 - pandas =1.4.1
-- sqlalchemy =1.4.31
+- sqlalchemy =1.4.32
 - numpy =1.22.2
 - matplotlib =3.5.1
 - pydatamail =0.0.4
