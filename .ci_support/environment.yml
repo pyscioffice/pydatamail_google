@@ -5,7 +5,7 @@ dependencies:
 - coverage
 - coveralls
 - google-api-python-client =2.41.0
-- google-auth =2.6.0
+- google-auth =2.6.2
 - google-auth-oauthlib =0.5.1
 - tqdm =4.63.0
 - pandas =1.4.1
