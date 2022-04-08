@@ -20,7 +20,7 @@ setup(
         'google-auth-oauthlib==0.5.1',
         'tqdm==4.64.0',
         'pandas==1.4.2',
-        'sqlalchemy==1.4.34',
+        'sqlalchemy==1.4.35',
         'numpy==1.22.3',
         'matplotlib==3.5.1',
         'pydatamail==0.0.4'
