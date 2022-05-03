@@ -22,7 +22,7 @@ setup(
         'pandas==1.4.2',
         'sqlalchemy==1.4.36',
         'numpy==1.22.3',
-        'matplotlib==3.5.1',
+        'matplotlib==3.5.2',
         'pydatamail==0.0.4'
     ],
     extras_require={
