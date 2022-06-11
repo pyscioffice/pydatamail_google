@@ -15,14 +15,14 @@ setup(
     license='BSD',
     packages=find_packages(exclude=["*tests*"]),
     install_requires=[
-        'google-api-python-client==2.38.0',
-        'google-auth==2.6.0',
-        'google-auth-oauthlib==0.4.6',
-        'tqdm==4.62.3',
-        'pandas==1.4.1',
-        'sqlalchemy==1.4.31',
-        'numpy==1.22.2',
-        'matplotlib==3.5.1',
+        'google-api-python-client==2.50.0',
+        'google-auth==2.7.0',
+        'google-auth-oauthlib==0.5.1',
+        'tqdm==4.64.0',
+        'pandas==1.4.2',
+        'sqlalchemy==1.4.37',
+        'numpy==1.22.4',
+        'matplotlib==3.5.2',
         'pydatamail==0.0.4'
     ],
     extras_require={
