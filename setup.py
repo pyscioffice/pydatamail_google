@@ -9,6 +9,7 @@ setup(
     name='pydatamail_google',
     version=versioneer.get_version(),
     description='Python interface to filter emails on Google Mail.',
+    long_description='',
     url='https://github.com/pyscioffice/pydatamail_google',
     author='Jan Janssen',
     author_email='jan.janssen@outlook.com',
