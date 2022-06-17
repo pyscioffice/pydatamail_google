@@ -136,7 +136,7 @@ def _create_service(
             token_valid = False
         if not token_valid:
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, scopes)
-            cred = flow.run_local_server()
+            cred = flow.run_local_server(open_browser=False)
 
         with open(os.path.join(working_dir, token_dir, json_file), "w") as token:
             token.write(cred.to_json())
