@@ -132,6 +132,8 @@ def _create_service(
                 cred.refresh(Request())
             except RefreshError:
                 token_valid = False
+        else:
+            token_valid = False
         if not token_valid:
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, scopes)
             cred = flow.run_local_server()
