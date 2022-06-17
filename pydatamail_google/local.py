@@ -1,6 +1,7 @@
 import os
 import json
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -125,9 +126,13 @@ def _create_service(
         cred = Credentials.from_authorized_user_file(token_file, scopes)
 
     if not cred or not cred.valid:
+        token_valid = True
         if cred and cred.expired and cred.refresh_token:
-            cred.refresh(Request())
-        else:
+            try:
+                cred.refresh(Request())
+            except RefreshError:
+                token_valid = False
+        if not token_valid:
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, scopes)
             cred = flow.run_local_server()
 
