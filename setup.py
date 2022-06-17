@@ -2,6 +2,7 @@
 Setuptools based setup module
 """
 from setuptools import setup, find_packages
+from pathlib import Path
 import versioneer
 
 
@@ -9,6 +10,8 @@ setup(
     name='pydatamail_google',
     version=versioneer.get_version(),
     description='Python interface to filter emails on Google Mail.',
+    long_description=Path("README.md").read_text(),
+    long_description_content_type='text/markdown',
     url='https://github.com/pyscioffice/pydatamail_google',
     author='Jan Janssen',
     author_email='jan.janssen@outlook.com',
