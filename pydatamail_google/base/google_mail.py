@@ -290,6 +290,10 @@ class GoogleMailBase:
                     label=task_input["label"],
                     filter_dict_lst=task_input["filter_dict_lst"],
                 )
+            elif task == "filter_label_by_machine_learning":
+                self.filter_label_by_machine_learning(
+                    label=task_input,
+                )
             elif task != "database":
                 raise ValueError("Task not recognized: ", task)
 

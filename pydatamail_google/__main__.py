@@ -55,10 +55,7 @@ def command_line_parser():
         gmail.update_database()
     elif args.machinelearning:
         gmail.filter_label_by_machine_learning(
-            label=args.machinelearning,
-            n_estimators=10,
-            random_state=42,
-            recalculate=False
+            label=args.machinelearning
         )
     else:
         gmail.load_json_tasks()
