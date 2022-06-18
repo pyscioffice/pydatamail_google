@@ -430,31 +430,34 @@ class GoogleMailBase:
         df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
         df_all_encode = one_hot_encoding(df=df_all)
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
-        df_select_hot = one_hot_encoding(
-            df=df_select, label_lst=df_all_encode.columns.values
-        )
-        labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
-        df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
+        if len(df_select) > 0:
+            df_select_hot = one_hot_encoding(
+                df=df_select, label_lst=df_all_encode.columns.values
+            )
+            labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
+            df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
 
-        models = self._db_ml.get_models(
-            df=df_all_encode,
-            n_estimators=n_estimators,
-            random_state=random_state,
-            user_id=self._db_user_id,
-            recalculate=recalculate,
-        )
-        predictions = {
-            k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
-        }
-        label_lst = list(predictions.keys())
-        prediction_array = np.array(list(predictions.values())).T
-        new_label_lst = [
-            label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
-        ]
-        return {
-            email_id: label
-            for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
-        }
+            models = self._db_ml.get_models(
+                df=df_all_encode,
+                n_estimators=n_estimators,
+                random_state=random_state,
+                user_id=self._db_user_id,
+                recalculate=recalculate,
+            )
+            predictions = {
+                k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
+            }
+            label_lst = list(predictions.keys())
+            prediction_array = np.array(list(predictions.values())).T
+            new_label_lst = [
+                label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
+            ]
+            return {
+                email_id: label
+                for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
+            }
+        else:
+            return {}
 
     def _save_attachments_of_message(
         self, email_message_id, folder_id, exclude_files_lst=[]
