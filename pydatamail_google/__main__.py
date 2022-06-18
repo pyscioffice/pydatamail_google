@@ -54,6 +54,7 @@ def command_line_parser():
     elif args.database:
         gmail.update_database()
     elif args.machinelearning:
+        gmail.update_database()
         gmail.filter_label_by_machine_learning(
             label=args.machinelearning
         )

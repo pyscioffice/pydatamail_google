@@ -291,6 +291,7 @@ class GoogleMailBase:
                     filter_dict_lst=task_input["filter_dict_lst"],
                 )
             elif task == "filter_label_by_machine_learning":
+                self.update_database()
                 self.filter_label_by_machine_learning(
                     label=task_input,
                 )
