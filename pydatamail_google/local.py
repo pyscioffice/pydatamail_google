@@ -126,14 +126,15 @@ def _create_service(
         cred = Credentials.from_authorized_user_file(token_file, scopes)
 
     if not cred or not cred.valid:
-        token_valid = True
+        token_valid = False
         if cred and cred.expired and cred.refresh_token:
             try:
                 cred.refresh(Request())
             except RefreshError:
-                token_valid = False
-        else:
-            token_valid = False
+                pass
+            else:
+                token_valid = True
+
         if not token_valid:
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, scopes)
             cred = flow.run_local_server(open_browser=False)
