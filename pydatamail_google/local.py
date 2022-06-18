@@ -45,7 +45,7 @@ class Gmail(GoogleMailBase):
         client_service_file=None,
         user_id="me",
         config_folder="~/.pydatamail",
-        enable_google_drive=False,
+        enable_google_drive=True,
         db_user_id=1,
     ):
         """
