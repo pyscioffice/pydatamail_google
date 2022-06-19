@@ -116,7 +116,11 @@ class Message(AbstractMessage):
     def _split_emails(self, email_lst):
         if email_lst is not None:
             email_split_lst = email_lst.split(", ")
-            return [self._get_email_address(email=email) for email in email_split_lst]
+            return [
+                self._get_email_address(email=email)
+                for email in email_split_lst
+                if "@" in email
+            ]
         else:
             return []
 
