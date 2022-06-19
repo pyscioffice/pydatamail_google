@@ -52,9 +52,9 @@ def command_line_parser():
     elif args.search:
         print(gmail.search_email(query_string=args.search, only_message_ids=True))
     elif args.database:
-        gmail.update_database()
+        gmail.update_database(quick=False)
     elif args.machinelearning:
-        gmail.update_database()
+        gmail.update_database(quick=True)
         gmail.filter_label_by_machine_learning(
             label=args.machinelearning
         )
