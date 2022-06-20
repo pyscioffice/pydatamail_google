@@ -56,6 +56,7 @@ class GoogleMailBase:
         random_state=42,
         recalculate=False,
         include_deleted=False,
+        recommendation_ratio=0.9,
     ):
         """
         Filter emails based on machine learning model recommendations.
@@ -66,6 +67,7 @@ class GoogleMailBase:
             random_state (int): Random state
             recalculate (boolean): Train the model again
             include_deleted (boolean): Include deleted emails in training
+            recommendation_ratio (float): Only accept recommendation above this ratio (0<r<1)
         """
         model_recommendation_dict = self._get_machine_learning_recommendations(
             label=label,
@@ -73,6 +75,7 @@ class GoogleMailBase:
             random_state=random_state,
             recalculate=recalculate,
             include_deleted=include_deleted,
+            recommendation_ratio=recommendation_ratio,
         )
         label_existing = self._label_dict[label]
         for message_id, label_add in model_recommendation_dict.items():
@@ -460,6 +463,7 @@ class GoogleMailBase:
         random_state=42,
         recalculate=False,
         include_deleted=False,
+        recommendation_ratio=0.9,
     ):
         """
         Train internal machine learning models to predict email sorting.
@@ -470,6 +474,7 @@ class GoogleMailBase:
             random_state (int): Random state
             recalculate (boolean): Train the model again
             include_deleted (boolean): Include deleted emails in training
+            recommendation_ratio (float): Only accept recommendation above this ratio (0<r<1)
 
         Returns:
             dict: Email IDs and the corresponding label ID.
@@ -498,7 +503,7 @@ class GoogleMailBase:
             label_lst = list(predictions.keys())
             prediction_array = np.array(list(predictions.values())).T
             new_label_lst = [
-                label_lst[email] if np.max(values) > 0.9 else None
+                label_lst[email] if np.max(values) > recommendation_ratio else None
                 for email, values in zip(
                     np.argsort(prediction_array, axis=1)[:, -1], prediction_array
                 )
