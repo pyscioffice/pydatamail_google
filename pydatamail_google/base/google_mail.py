@@ -436,6 +436,7 @@ class GoogleMailBase:
             array_bool = np.any([
                 (df_all_encode[c] == 1).values
                 for c in df_columns_to_drop_lst
+                if c in df_all_encode.columns
             ], axis=0)
             df_all_encode = df_all_encode[~array_bool]
         return df_all_encode.drop(labels=df_columns_to_drop_lst, axis=1)
