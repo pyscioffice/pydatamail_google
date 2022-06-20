@@ -75,7 +75,7 @@ class GoogleMailBase:
         )
         label_existing = self._label_dict[label]
         for message_id, label_add in model_recommendation_dict.items():
-            if label_add != label_existing:
+            if label_add is not None and label_add != label_existing:
                 self._modify_message_labels(
                     message_id=message_id,
                     label_id_remove_lst=[label_existing],
@@ -300,6 +300,7 @@ class GoogleMailBase:
                 self.update_database(quick=True)
                 self.filter_label_by_machine_learning(
                     label=task_input,
+                    recalculate=True
                 )
             elif task != "database":
                 raise ValueError("Task not recognized: ", task)
