@@ -12,6 +12,7 @@ from pydatamail import (
     get_email_database,
     one_hot_encoding,
     get_machine_learning_database,
+    get_training_input
 )
 
 try:
@@ -482,10 +483,7 @@ class GoogleMailBase:
             df_select_hot = one_hot_encoding(
                 df=df_select, label_lst=df_all_encode.columns.values
             )
-            labels_to_remove = [
-                c for c in df_select_hot.columns.values if "labels_" in c
-            ]
-            df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
+            df_select_red = get_training_input(df=df_select_hot)
 
             models = self._db_ml.get_models(
                 df=df_all_encode,
