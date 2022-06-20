@@ -208,7 +208,11 @@ class GoogleMailBase:
         )
 
     def train_machine_learning_model(
-        self, n_estimators=10, random_state=42, include_deleted=False, labels_to_exclude_lst=[]
+        self,
+        n_estimators=10,
+        random_state=42,
+        include_deleted=False,
+        labels_to_exclude_lst=[],
     ):
         """
         Train internal machine learning models
@@ -220,8 +224,7 @@ class GoogleMailBase:
             labels_to_exclude_lst (list): list of email labels which are excluded from the fitting process
         """
         df_all_encode_red = self._gather_data_for_machine_learning(
-            include_deleted=include_deleted,
-            labels_to_exclude_lst=labels_to_exclude_lst
+            include_deleted=include_deleted, labels_to_exclude_lst=labels_to_exclude_lst
         )
         self._db_ml.train_model(
             df=df_all_encode_red,
@@ -414,7 +417,9 @@ class GoogleMailBase:
             message=self._get_message_detail(message_id=message_id, format=format)
         )
 
-    def _gather_data_for_machine_learning(self, include_deleted=False, labels_to_exclude_lst=[]):
+    def _gather_data_for_machine_learning(
+        self, include_deleted=False, labels_to_exclude_lst=[]
+    ):
         """
         Internal function to gather dataframe for training machine learning models
 
@@ -436,11 +441,12 @@ class GoogleMailBase:
             c for c in df_columns_to_drop_lst if c in df_all_encode.columns
         ]
         if len(df_columns_to_drop_lst) > 0:
-            array_bool = np.any([
-                (df_all_encode[c] == 1).values
-                for c in df_columns_to_drop_lst
-            ], axis=0)
-            if isinstance(array_bool, np.ndarray) and len(array_bool) == len(df_all_encode):
+            array_bool = np.any(
+                [(df_all_encode[c] == 1).values for c in df_columns_to_drop_lst], axis=0
+            )
+            if isinstance(array_bool, np.ndarray) and len(array_bool) == len(
+                df_all_encode
+            ):
                 df_all_encode = df_all_encode[~array_bool]
             return df_all_encode.drop(labels=df_columns_to_drop_lst, axis=1)
         else:
@@ -468,15 +474,16 @@ class GoogleMailBase:
             dict: Email IDs and the corresponding label ID.
         """
         df_all_encode = self._gather_data_for_machine_learning(
-            include_deleted=include_deleted,
-            labels_to_exclude_lst=[label]
+            include_deleted=include_deleted, labels_to_exclude_lst=[label]
         )
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
         if len(df_select) > 0:
             df_select_hot = one_hot_encoding(
                 df=df_select, label_lst=df_all_encode.columns.values
             )
-            labels_to_remove = [c for c in df_select_hot.columns.values if "labels_" in c]
+            labels_to_remove = [
+                c for c in df_select_hot.columns.values if "labels_" in c
+            ]
             df_select_red = df_select_hot.drop(labels_to_remove + ["email_id"], axis=1)
 
             models = self._db_ml.get_models(
@@ -487,13 +494,16 @@ class GoogleMailBase:
                 recalculate=recalculate,
             )
             predictions = {
-                k: v.predict(df_select_red.sort_index(axis=1)) for k, v in models.items()
+                k: v.predict(df_select_red.sort_index(axis=1))
+                for k, v in models.items()
             }
             label_lst = list(predictions.keys())
             prediction_array = np.array(list(predictions.values())).T
             new_label_lst = [
                 label_lst[email] if np.max(values) > 0.9 else None
-                for email, values in zip(np.argsort(prediction_array, axis=1)[:, -1], prediction_array)
+                for email, values in zip(
+                    np.argsort(prediction_array, axis=1)[:, -1], prediction_array
+                )
             ]
             return {
                 email_id: label
