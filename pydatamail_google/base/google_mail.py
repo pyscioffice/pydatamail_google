@@ -208,7 +208,7 @@ class GoogleMailBase:
         )
 
     def train_machine_learning_model(
-        self, n_estimators=10, random_state=42, include_deleted=False
+        self, n_estimators=10, random_state=42, include_deleted=False, labels_to_exclude_lst=[]
     ):
         """
         Train internal machine learning models
@@ -217,11 +217,14 @@ class GoogleMailBase:
             n_estimators (int): Number of estimators
             random_state (int): Random state
             include_deleted (boolean): Include deleted emails in training
+            labels_to_exclude_lst (list): list of email labels which are excluded from the fitting process
         """
-        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
-        df_all_encode = one_hot_encoding(df=df_all)
+        df_all_encode_red = self._gather_data_for_machine_learning(
+            include_deleted=include_deleted,
+            labels_to_exclude_lst=labels_to_exclude_lst
+        )
         self._db_ml.train_model(
-            df=df_all_encode,
+            df=df_all_encode_red,
             labels_to_learn=None,
             user_id=self._db_user_id,
             n_estimators=n_estimators,
@@ -411,6 +414,32 @@ class GoogleMailBase:
             message=self._get_message_detail(message_id=message_id, format=format)
         )
 
+    def _gather_data_for_machine_learning(self, include_deleted=False, labels_to_exclude_lst=[]):
+        """
+        Internal function to gather dataframe for training machine learning models
+
+        Args:
+            include_deleted (boolean): Include deleted emails in training
+            labels_to_exclude_lst (list): list of email labels which are excluded from the fitting process
+
+        Returns:
+            pandas.DataFrame: With all emails and their encoded labels
+        """
+        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
+        df_all_encode = one_hot_encoding(df=df_all)
+        df_columns_to_drop_lst = [
+            "labels_" + self._label_dict[label]
+            for label in labels_to_exclude_lst
+            if label in self.labels
+        ]
+        if len(labels_to_exclude_lst) > 0:
+            array_bool = np.any([
+                (df_all_encode[c] == 1).values
+                for c in df_columns_to_drop_lst
+            ], axis=0)
+            df_all_encode = df_all_encode[~array_bool]
+        return df_all_encode.drop(labels=df_columns_to_drop_lst, axis=1)
+
     def _get_machine_learning_recommendations(
         self,
         label,
@@ -432,8 +461,10 @@ class GoogleMailBase:
         Returns:
             dict: Email IDs and the corresponding label ID.
         """
-        df_all = self.get_all_emails_in_database(include_deleted=include_deleted)
-        df_all_encode = one_hot_encoding(df=df_all)
+        df_all_encode = self._gather_data_for_machine_learning(
+            include_deleted=include_deleted,
+            labels_to_exclude_lst=[label]
+        )
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
         if len(df_select) > 0:
             df_select_hot = one_hot_encoding(
@@ -455,7 +486,8 @@ class GoogleMailBase:
             label_lst = list(predictions.keys())
             prediction_array = np.array(list(predictions.values())).T
             new_label_lst = [
-                label_lst[email] for email in np.argsort(prediction_array, axis=1)[:, -1]
+                label_lst[email] if np.max(values) > 0.9 else None
+                for email, values in zip(np.argsort(prediction_array, axis=1)[:, -1], prediction_array)
             ]
             return {
                 email_id: label
