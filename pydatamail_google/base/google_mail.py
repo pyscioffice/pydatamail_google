@@ -12,7 +12,7 @@ from pydatamail import (
     get_email_database,
     one_hot_encoding,
     get_machine_learning_database,
-    get_training_input
+    get_training_input,
 )
 
 try:
@@ -300,8 +300,7 @@ class GoogleMailBase:
             elif task == "filter_label_by_machine_learning":
                 self.update_database(quick=True)
                 self.filter_label_by_machine_learning(
-                    label=task_input,
-                    recalculate=True
+                    label=task_input, recalculate=True
                 )
             elif task != "database":
                 raise ValueError("Task not recognized: ", task)
