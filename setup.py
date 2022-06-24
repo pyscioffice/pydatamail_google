@@ -23,7 +23,7 @@ setup(
         'google-auth-oauthlib==0.5.2',
         'tqdm==4.64.0',
         'pandas==1.4.3',
-        'sqlalchemy==1.4.38',
+        'sqlalchemy==1.4.39',
         'numpy==1.23.0',
         'matplotlib==3.5.2',
         'pydatamail==0.0.5'
