@@ -24,7 +24,7 @@ setup(
         'tqdm==4.64.0',
         'pandas==1.4.3',
         'sqlalchemy==1.4.38',
-        'numpy==1.22.4',
+        'numpy==1.23.0',
         'matplotlib==3.5.2',
         'pydatamail==0.0.5'
     ],
