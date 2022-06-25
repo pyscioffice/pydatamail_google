@@ -228,22 +228,17 @@ class GoogleMailBase:
             labels_to_exclude_lst (list): list of email labels which are excluded from the fitting process
         """
         df_all_encode_red = gather_data_for_machine_learning(
-            df_all=self.get_all_emails_in_database(
-                include_deleted=include_deleted
-            ),
+            df_all=self.get_all_emails_in_database(include_deleted=include_deleted),
             labels_dict=self._label_dict,
-            labels_to_exclude_lst=labels_to_exclude_lst
+            labels_to_exclude_lst=labels_to_exclude_lst,
         )
         model_dict = train_model(
             df=df_all_encode_red,
             labels_to_learn=None,
             n_estimators=n_estimators,
-            random_state=random_state
+            random_state=random_state,
         )
-        self._db_ml.store_models(
-            model_dict=model_dict,
-            user_id=self._db_user_id
-        )
+        self._db_ml.store_models(model_dict=model_dict, user_id=self._db_user_id)
         return model_dict
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
@@ -455,11 +450,9 @@ class GoogleMailBase:
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
         if len(df_select) > 0:
             df_all_encode = gather_data_for_machine_learning(
-                df_all=self.get_all_emails_in_database(
-                    include_deleted=include_deleted
-                ),
+                df_all=self.get_all_emails_in_database(include_deleted=include_deleted),
                 labels_dict=self._label_dict,
-                labels_to_exclude_lst=[label]
+                labels_to_exclude_lst=[label],
             )
             models = self._db_ml.get_models(
                 df=df_all_encode,
@@ -472,7 +465,7 @@ class GoogleMailBase:
                 models=models,
                 df_select=df_select,
                 df_all_encode=df_all_encode,
-                recommendation_ratio=recommendation_ratio
+                recommendation_ratio=recommendation_ratio,
             )
         else:
             return {}
