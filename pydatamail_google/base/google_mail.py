@@ -3,17 +3,16 @@ import json
 import pandas
 import shutil
 import warnings
-import numpy as np
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
 from pydatamail import (
     get_email_database,
-    one_hot_encoding,
     get_machine_learning_database,
-    get_training_input,
     gather_data_for_machine_learning,
+    train_model,
+    get_machine_learning_recommendations,
 )
 
 try:
@@ -235,13 +234,17 @@ class GoogleMailBase:
             labels_dict=self._label_dict,
             labels_to_exclude_lst=labels_to_exclude_lst
         )
-        self._db_ml.train_model(
+        model_dict = train_model(
             df=df_all_encode_red,
             labels_to_learn=None,
-            user_id=self._db_user_id,
             n_estimators=n_estimators,
-            random_state=random_state,
+            random_state=random_state
         )
+        self._db_ml.store_models(
+            model_dict=model_dict,
+            user_id=self._db_user_id
+        )
+        return model_dict
 
     def search_email(self, query_string="", label_lst=[], only_message_ids=False):
         """
@@ -449,20 +452,15 @@ class GoogleMailBase:
         Returns:
             dict: Email IDs and the corresponding label ID.
         """
-        df_all_encode = gather_data_for_machine_learning(
-            df_all=self.get_all_emails_in_database(
-                include_deleted=include_deleted
-            ),
-            labels_dict=self._label_dict,
-            labels_to_exclude_lst=[label]
-        )
         df_select = self.get_emails_by_label(label=label, include_deleted=False)
         if len(df_select) > 0:
-            df_select_hot = one_hot_encoding(
-                df=df_select, label_lst=df_all_encode.columns.values
+            df_all_encode = gather_data_for_machine_learning(
+                df_all=self.get_all_emails_in_database(
+                    include_deleted=include_deleted
+                ),
+                labels_dict=self._label_dict,
+                labels_to_exclude_lst=[label]
             )
-            df_select_red = get_training_input(df=df_select_hot)
-
             models = self._db_ml.get_models(
                 df=df_all_encode,
                 n_estimators=n_estimators,
@@ -470,22 +468,12 @@ class GoogleMailBase:
                 user_id=self._db_user_id,
                 recalculate=recalculate,
             )
-            predictions = {
-                k: v.predict(df_select_red.sort_index(axis=1))
-                for k, v in models.items()
-            }
-            label_lst = list(predictions.keys())
-            prediction_array = np.array(list(predictions.values())).T
-            new_label_lst = [
-                label_lst[email] if np.max(values) > recommendation_ratio else None
-                for email, values in zip(
-                    np.argsort(prediction_array, axis=1)[:, -1], prediction_array
-                )
-            ]
-            return {
-                email_id: label
-                for email_id, label in zip(df_select_hot.email_id.values, new_label_lst)
-            }
+            return get_machine_learning_recommendations(
+                models=models,
+                df_select=df_select,
+                df_all_encode=df_all_encode,
+                recommendation_ratio=recommendation_ratio
+            )
         else:
             return {}
 
