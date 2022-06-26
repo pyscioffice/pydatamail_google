@@ -27,12 +27,14 @@ setup(
         'numpy==1.23.0',
         'matplotlib==3.5.2',
         'pydatamail==0.0.6',
-        'pydatamail_ml==0.0.2'
     ],
     extras_require={
         'archive': [
             'pypdf3==1.0.6',
             'email2pdf==0.9.9.0'
+        ],
+        'machinelearning': [
+            'pydatamail_ml==0.0.2'
         ]
     },
     cmdclass=versioneer.get_cmdclass(),

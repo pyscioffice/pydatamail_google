@@ -13,4 +13,3 @@ dependencies:
 - numpy =1.23.0
 - matplotlib =3.5.2
 - pydatamail =0.0.6
-- pydatamail_ml =0.0.2
