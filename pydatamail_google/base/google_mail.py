@@ -52,8 +52,10 @@ class GoogleMailBase:
     def filter_label_by_machine_learning(
         self,
         label,
-        n_estimators=10,
+        n_estimators=100,
+        max_features=400,
         random_state=42,
+        bootstrap=True,
         recalculate=False,
         include_deleted=False,
         recommendation_ratio=0.9,
@@ -64,7 +66,10 @@ class GoogleMailBase:
         Args:
             label (str): Email label to filter for
             n_estimators (int): Number of estimators
+            max_features (int): Number of features
             random_state (int): Random state
+            bootstrap (boolean): Whether bootstrap samples are used when building trees. If False, the whole dataset is
+                                 used to build each tree. (default: true)
             recalculate (boolean): Train the model again
             include_deleted (boolean): Include deleted emails in training
             recommendation_ratio (float): Only accept recommendation above this ratio (0<r<1)
@@ -73,7 +78,9 @@ class GoogleMailBase:
             label=label,
             n_estimators=n_estimators,
             random_state=random_state,
+            max_features=max_features,
             recalculate=recalculate,
+            bootstrap=bootstrap,
             include_deleted=include_deleted,
             recommendation_ratio=recommendation_ratio,
         )
@@ -213,8 +220,10 @@ class GoogleMailBase:
 
     def train_machine_learning_model(
         self,
-        n_estimators=10,
+        n_estimators=100,
+        max_features=400,
         random_state=42,
+        bootstrap=True,
         include_deleted=False,
         labels_to_exclude_lst=[],
     ):
@@ -223,7 +232,10 @@ class GoogleMailBase:
 
         Args:
             n_estimators (int): Number of estimators
+            max_features (int): Number of features
             random_state (int): Random state
+            bootstrap (boolean): Whether bootstrap samples are used when building trees. If False, the whole dataset is
+                                 used to build each tree. (default: true)
             include_deleted (boolean): Include deleted emails in training
             labels_to_exclude_lst (list): list of email labels which are excluded from the fitting process
         """
@@ -236,7 +248,9 @@ class GoogleMailBase:
             df=df_all_encode_red,
             labels_to_learn=None,
             n_estimators=n_estimators,
+            max_features=max_features,
             random_state=random_state,
+            bootstrap=bootstrap,
         )
         self._db_ml.store_models(model_dict=model_dict, user_id=self._db_user_id)
         return model_dict
@@ -427,8 +441,10 @@ class GoogleMailBase:
     def _get_machine_learning_recommendations(
         self,
         label,
-        n_estimators=10,
+        n_estimators=100,
+        max_features=400,
         random_state=42,
+        bootstrap=True,
         recalculate=False,
         include_deleted=False,
         recommendation_ratio=0.9,
@@ -439,7 +455,10 @@ class GoogleMailBase:
         Args:
             label (str): Email label to filter for
             n_estimators (int): Number of estimators
+            max_features (int): Number of features
             random_state (int): Random state
+            bootstrap (boolean): Whether bootstrap samples are used when building trees. If False, the whole dataset is
+                                 used to build each tree. (default: true)
             recalculate (boolean): Train the model again
             include_deleted (boolean): Include deleted emails in training
             recommendation_ratio (float): Only accept recommendation above this ratio (0<r<1)
@@ -457,7 +476,9 @@ class GoogleMailBase:
             models = self._db_ml.get_models(
                 df=df_all_encode,
                 n_estimators=n_estimators,
+                max_features=max_features,
                 random_state=random_state,
+                bootstrap=bootstrap,
                 user_id=self._db_user_id,
                 recalculate=recalculate,
             )
