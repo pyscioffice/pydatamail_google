@@ -7,8 +7,8 @@ from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
-from pydatamail import (
-    get_email_database,
+from pydatamail import get_email_database
+from pydatamail_ml import (
     get_machine_learning_database,
     gather_data_for_machine_learning,
     train_model,
