@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pydatamail_google.base.message import Message, get_email_dict
 from pydatamail import get_email_database
+
 try:
     from pydatamail_ml import (
         get_machine_learning_database,
@@ -16,7 +17,9 @@ try:
         get_machine_learning_recommendations,
     )
 except ImportError:
-    warnings.warn("The machine learning functionality requires the additional pydatamail_ml extension.")
+    warnings.warn(
+        "The machine learning functionality requires the additional pydatamail_ml extension."
+    )
 
 try:
     from pydatamail_google.base.archive import (
