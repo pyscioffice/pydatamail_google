@@ -35,6 +35,11 @@ def command_line_parser():
         "--config",
         help="Configuration Folder e.g. ~/.pydatamail_google",
     )
+    parser.add_argument(
+        "-m",
+        "--machinelearning",
+        help="Email label to be filtered with machine learning.",
+    )
     args = parser.parse_args()
     if args.config:
         gmail = Gmail(config_folder=args.config, enable_google_drive=False)
@@ -47,7 +52,12 @@ def command_line_parser():
     elif args.search:
         print(gmail.search_email(query_string=args.search, only_message_ids=True))
     elif args.database:
-        gmail.update_database()
+        gmail.update_database(quick=False)
+    elif args.machinelearning:
+        gmail.update_database(quick=True)
+        gmail.filter_label_by_machine_learning(
+            label=args.machinelearning, recalculate=True
+        )
     else:
         gmail.load_json_tasks()
 
