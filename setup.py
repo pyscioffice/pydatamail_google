@@ -18,7 +18,7 @@ setup(
     license='BSD',
     packages=find_packages(exclude=["*tests*"]),
     install_requires=[
-        'google-api-python-client==2.51.0',
+        'google-api-python-client==2.52.0',
         'google-auth==2.9.0',
         'google-auth-oauthlib==0.5.2',
         'tqdm==4.64.0',
@@ -26,7 +26,7 @@ setup(
         'sqlalchemy==1.4.39',
         'numpy==1.23.0',
         'matplotlib==3.5.2',
-        'pydatamail==0.0.6',
+        'pydatamail==0.0.7',
     ],
     extras_require={
         'archive': [
