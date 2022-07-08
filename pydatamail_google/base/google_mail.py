@@ -190,7 +190,7 @@ class GoogleMailBase:
         """
         return [
             self.get_labels_for_email(message_id=message_id)
-            for message_id in message_id_lst
+            for message_id in tqdm(message_id_lst)
         ]
 
     def get_all_emails_in_database(self, include_deleted=False):
