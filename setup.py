@@ -26,7 +26,7 @@ setup(
         'sqlalchemy==1.4.39',
         'numpy==1.23.0',
         'matplotlib==3.5.2',
-        'pydatamail==0.0.7',
+        'pydatamail==0.0.8',
     ],
     extras_require={
         'archive': [
