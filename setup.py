@@ -33,7 +33,7 @@ setup(
             'email2pdf==0.9.9.0'
         ],
         'machinelearning': [
-            'pydatamail_ml==0.0.2'
+            'pydatamail_ml==0.0.3'
         ]
     },
     cmdclass=versioneer.get_cmdclass(),
