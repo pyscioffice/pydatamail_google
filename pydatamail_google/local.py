@@ -47,7 +47,7 @@ class Gmail(GoogleMailBase):
         config_folder="~/.pydatamail",
         enable_google_drive=True,
         db_user_id=1,
-        port=8080
+        port=8080,
     ):
         """
         Gmail class to manage Emails via the Gmail API directly from Python
@@ -89,7 +89,7 @@ class Gmail(GoogleMailBase):
             scopes=connect_dict["scopes"],
             prefix="",
             working_dir=self._config_path,
-            port=port
+            port=port,
         )
 
         # Google drive
@@ -117,7 +117,13 @@ class Gmail(GoogleMailBase):
 
 
 def _create_service(
-    client_secret_file, api_name, api_version, scopes, prefix="", working_dir=None, port=8080
+    client_secret_file,
+    api_name,
+    api_version,
+    scopes,
+    prefix="",
+    working_dir=None,
+    port=8080,
 ):
     cred = None
     if working_dir is None:
