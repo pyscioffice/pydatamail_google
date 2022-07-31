@@ -3,7 +3,6 @@ import base64
 import email
 import numpy as np
 from tqdm import tqdm
-from datetime import datetime
 from PyPDF3 import PdfFileMerger
 from email2pdf2 import (
     get_unique_version,
@@ -14,6 +13,7 @@ from email2pdf2 import (
     output_body_pdf,
     FatalException,
 )
+from pydatamail import email_date_converter
 
 
 def convert_eml_to_pdf(input_file, output_file):
@@ -41,9 +41,7 @@ def convert_eml_to_pdf(input_file, output_file):
 def get_date(message_details):
     for message_detail in message_details["payload"]["headers"]:
         if message_detail["name"] == "Date":
-            return datetime.strptime(
-                message_detail["value"], "%a, %d %b %Y %H:%M:%S %z"
-            )
+            return email_date_converter(email_date=message_detail["value"])
 
 
 def convert_eml_folder_to_pdf(folder_to_save_all_emails):
