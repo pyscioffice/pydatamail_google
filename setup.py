@@ -24,7 +24,7 @@ setup(
         'tqdm==4.64.0',
         'pandas==1.4.3',
         'sqlalchemy==1.4.40',
-        'numpy==1.23.1',
+        'numpy==1.23.2',
         'pydatamail==0.0.10',
     ],
     extras_require={
