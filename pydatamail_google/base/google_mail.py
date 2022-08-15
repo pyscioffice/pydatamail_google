@@ -116,7 +116,8 @@ class GoogleMailBase:
         message_list_response = self.search_email(query_string="", label_lst=[label])
 
         for message_id in tqdm(
-            self._get_message_ids(message_lst=message_list_response)
+            iterable=self._get_message_ids(message_lst=message_list_response),
+            desc="Filter label by sender",
         ):
             label_add = self._filter_message_by_sender(
                 filter_dict_lst=filter_dict_lst, message_id=message_id
@@ -128,16 +129,19 @@ class GoogleMailBase:
                     label_id_add_lst=[label_add],
                 )
 
-    def update_database(self, quick=False, format="full"):
+    def update_database(self, quick=False, label_lst=[], format="full"):
         """
         Update local email database
 
         Args:
             quick (boolean): Only add new emails, do not update existing labels - by default: False
+            label_lst (list): list of labels to be searched
             format (str): Email format to download - default: "full"
         """
         if self._db_email is not None:
-            message_id_lst = self.search_email(only_message_ids=True)
+            message_id_lst = self.search_email(
+                label_lst=label_lst, only_message_ids=True
+            )
             (
                 new_messages_lst,
                 message_label_updates_lst,
@@ -190,7 +194,9 @@ class GoogleMailBase:
         """
         return [
             self.get_labels_for_email(message_id=message_id)
-            for message_id in tqdm(message_id_lst)
+            for message_id in tqdm(
+                iterable=message_id_lst, desc="Get labels for emails"
+            )
         ]
 
     def get_all_emails_in_database(self, include_deleted=False):
@@ -291,12 +297,12 @@ class GoogleMailBase:
             label_lst (list): list of labels
         """
         label_convert_lst = [self._label_dict[label] for label in label_lst]
-        for label in tqdm(label_convert_lst):
+        for label in tqdm(iterable=label_convert_lst, desc="Remove labels from Emails"):
             message_list_response = self._get_messages(
                 query_string="", label_ids=[label]
             )
             for message_id in tqdm(
-                self._get_message_ids(message_lst=message_list_response)
+                iterable=self._get_message_ids(message_lst=message_list_response)
             ):
                 self._modify_message_labels(
                     message_id=message_id, label_id_remove_lst=[label]
@@ -324,7 +330,7 @@ class GoogleMailBase:
                     filter_dict_lst=task_input["filter_dict_lst"],
                 )
             elif task == "filter_label_by_machine_learning":
-                self.update_database(quick=True)
+                self.update_database(quick=True, label_lst=[task_input])
                 self.filter_label_by_machine_learning(
                     label=task_input, recalculate=True
                 )
@@ -350,7 +356,9 @@ class GoogleMailBase:
         email_messages = self.search_email(
             query_string=query_string, label_lst=[label], only_message_ids=True
         )
-        for email_message_id in tqdm(email_messages):
+        for email_message_id in tqdm(
+            iterable=email_messages, desc="Save attachments of label"
+        ):
             self._save_attachments_of_message(
                 email_message_id=email_message_id,
                 folder_id=folder_id,
@@ -371,7 +379,9 @@ class GoogleMailBase:
         return pandas.DataFrame(
             [
                 self.get_email_dict(message_id=message_id, format=format)
-                for message_id in tqdm(message_id_lst)
+                for message_id in tqdm(
+                    iterable=message_id_lst, desc="Download messagees to DataFrame"
+                )
             ]
         )
 
@@ -536,7 +546,9 @@ class GoogleMailBase:
         if not all_message_in_label:
             print("No email LM found.")
         else:
-            for emails in tqdm(all_message_in_label):
+            for emails in tqdm(
+                iterable=all_message_in_label, desc="Save label to EML file"
+            ):
                 messageraw = (
                     self._service.users()
                     .messages()

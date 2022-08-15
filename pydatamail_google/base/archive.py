@@ -50,7 +50,7 @@ def convert_eml_folder_to_pdf(folder_to_save_all_emails):
         for f in files:
             if f.endswith(".eml"):
                 eml_file_lst.append(os.path.join(root, os.path.splitext(f)[0]))
-    for f in tqdm(eml_file_lst):
+    for f in tqdm(iterable=eml_file_lst, desc="Convert EML files to PDF files"):
         try:
             convert_eml_to_pdf(input_file=f + ".eml", output_file=f + ".pdf")
         except FatalException:
@@ -86,7 +86,7 @@ def merge_pdf(folder_to_save_all_emails, message_sort_dict, file_name="result.pd
     ]
 
     merger = PdfFileMerger()
-    for pdf in tqdm(pdf_file_sorted_lst):
+    for pdf in tqdm(iterable=pdf_file_sorted_lst, desc="Merge PDF files"):
         merger.append(pdf)
     merger.write(file_name)
     merger.close()
