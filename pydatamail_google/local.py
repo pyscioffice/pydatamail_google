@@ -6,6 +6,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from pydatamail_google.base import GoogleDriveBase, GoogleMailBase
+from pygmailsorter.interface import _create_service, _create_config_folder
 
 
 class Drive(GoogleDriveBase):
@@ -114,49 +115,3 @@ class Gmail(GoogleMailBase):
             user_id=user_id,
             db_user_id=db_user_id,
         )
-
-
-def _create_service(
-    client_secret_file,
-    api_name,
-    api_version,
-    scopes,
-    prefix="",
-    working_dir=None,
-    port=8080,
-):
-    cred = None
-    if working_dir is None:
-        working_dir = os.getcwd()
-    token_dir = "token_files"
-    json_file = f"token_{api_name}_{api_version}{prefix}.json"
-
-    os.makedirs(os.path.join(working_dir, token_dir), exist_ok=True)
-    token_file = os.path.join(working_dir, token_dir, json_file)
-    if os.path.exists(token_file):
-        cred = Credentials.from_authorized_user_file(token_file, scopes)
-
-    if not cred or not cred.valid:
-        token_valid = False
-        if cred and cred.expired and cred.refresh_token:
-            try:
-                cred.refresh(Request())
-            except RefreshError:
-                pass
-            else:
-                token_valid = True
-
-        if not token_valid:
-            flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, scopes)
-            cred = flow.run_local_server(open_browser=False, port=port)
-
-        with open(os.path.join(working_dir, token_dir, json_file), "w") as token:
-            token.write(cred.to_json())
-
-    return build(api_name, api_version, credentials=cred)
-
-
-def _create_config_folder(config_folder="~/.pydatamail_google"):
-    config_path = os.path.abspath(os.path.expanduser(config_folder))
-    os.makedirs(config_path, exist_ok=True)
-    return config_path
