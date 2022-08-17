@@ -11,4 +11,4 @@ dependencies:
 - pandas =1.4.3
 - sqlalchemy =1.4.40
 - numpy =1.23.1
-- pydatamail =0.0.10
+- pygmailsorter =0.0.1
